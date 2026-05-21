@@ -1,0 +1,3045 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Танкопедия — Энциклопедия бронетехники XX века</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dark-bg: #1a1f1a;
+            --panel-bg: #2a3028;
+            --panel-light: #3a4235;
+            --accent: #5a7a4a;
+            --accent-light: #7a9a6a;
+            --accent-bright: #8ab870;
+            --text-primary: #e8e6d8;
+            --text-secondary: #a8a898;
+            --text-muted: #787868;
+            --border: #4a5240;
+            --danger: #8b4a3a;
+            --gold: #c8a84a;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0,0,0,0.03) 2px,
+                    rgba(0,0,0,0.03) 4px
+                ),
+                radial-gradient(ellipse at 50% 0%, rgba(90,122,74,0.15) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: linear-gradient(180deg, #151a13 0%, rgba(21,26,19,0.95) 100%);
+            border-bottom: 2px solid var(--accent);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            border: 1px solid var(--accent-light);
+            box-shadow: 0 0 15px rgba(90,122,74,0.3);
+        }
+
+        .logo-text {
+            font-family: 'Oswald', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .logo-text span {
+            color: var(--accent-bright);
+        }
+
+        nav {
+            display: flex;
+            gap: 5px;
+        }
+
+        .nav-btn {
+            padding: 8px 18px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover {
+            background: var(--panel-light);
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+
+        .nav-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent-light);
+            box-shadow: 0 0 15px rgba(90,122,74,0.3);
+        }
+
+        .nav-btn .flag {
+            font-size: 16px;
+        }
+
+        main {
+            position: relative;
+            z-index: 1;
+            padding-top: 70px;
+            min-height: 100vh;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero {
+            text-align: center;
+            padding: 80px 30px 60px;
+            position: relative;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .hero h1 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 56px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-bright) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        .century-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: var(--accent);
+            color: white;
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 6px;
+            margin-top: 20px;
+            border: 1px solid var(--accent-light);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            padding: 40px 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Oswald', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--accent-bright);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .countries-section {
+            padding: 40px 30px 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 28px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--text-primary);
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: var(--accent);
+            margin: 12px auto 0;
+            border-radius: 2px;
+        }
+
+        .countries-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .country-card {
+            background: linear-gradient(145deg, var(--panel-bg), var(--dark-bg));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 35px 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .country-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .country-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4), 0 0 30px rgba(90,122,74,0.1);
+        }
+
+        .country-card:hover::before {
+            opacity: 1;
+        }
+
+        .country-flag {
+            font-size: 50px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .country-name {
+            font-family: 'Oswald', sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .country-tanks-count {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .country-header {
+            padding: 50px 30px 30px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(90,122,74,0.1) 0%, transparent 100%);
+        }
+
+        .country-header .flag-big {
+            font-size: 60px;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .country-header h2 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .country-header p {
+            color: var(--text-secondary);
+            margin-top: 10px;
+            font-size: 15px;
+        }
+
+        /* Фильтры */
+        .filters-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 30px;
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-label {
+            font-family: 'Oswald', sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            min-width: 180px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .tanks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 30px 80px;
+        }
+
+        .tank-card {
+            background: linear-gradient(145deg, var(--panel-bg), #1f251c);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tank-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-light);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .tank-card.hidden {
+            display: none;
+        }
+
+        .tank-card-preview {
+            height: 200px;
+            background: linear-gradient(135deg, #2a3528, #1a2018);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 70px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tank-card-preview::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(transparent, var(--panel-bg));
+        }
+
+        .tank-type-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 10px;
+            background: rgba(90,122,74,0.9);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        .tank-year-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 10px;
+            background: rgba(200,168,74,0.9);
+            color: #1a1f1a;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        .tank-card-info {
+            padding: 20px 25px 25px;
+        }
+
+        .tank-card-info h3 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .tank-card-info p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .tank-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            background: var(--accent);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            margin-top: 12px;
+        }
+
+        .tank-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .tank-page-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent-light);
+        }
+
+        .tank-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .tank-layout {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .viewer-container {
+            background: linear-gradient(145deg, var(--panel-bg), #1a2018);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .viewer-header {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .viewer-header span {
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+
+        .viewer-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .viewer-ctrl-btn {
+            padding: 6px 14px;
+            background: var(--panel-light);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+        }
+
+        .viewer-ctrl-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .viewer-ctrl-btn.active {
+            background: var(--gold);
+            color: #1a1f1a;
+            border-color: var(--gold);
+        }
+
+        #tank-viewer {
+            width: 100%;
+            height: 550px;
+            cursor: grab;
+        }
+
+        #tank-viewer:active {
+            cursor: grabbing;
+        }
+
+        .viewer-footer {
+            padding: 12px 20px;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .viewer-footer span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .tank-details {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .detail-panel {
+            background: linear-gradient(145deg, var(--panel-bg), #1f251c);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .detail-panel-header {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid var(--border);
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-bright);
+        }
+
+        .detail-panel-content {
+            padding: 20px;
+        }
+
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(74,82,64,0.3);
+        }
+
+        .spec-row:last-child {
+            border-bottom: none;
+        }
+
+        .spec-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .spec-value {
+            font-family: 'Oswald', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .history-text {
+            font-size: 14px;
+            line-height: 1.9;
+            color: var(--text-secondary);
+        }
+
+        .history-text p {
+            margin-bottom: 15px;
+        }
+
+        .history-text h4 {
+            font-family: 'Oswald', sans-serif;
+            color: var(--accent-bright);
+            margin: 20px 0 10px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .battles-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .battles-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(74,82,64,0.3);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .battles-list li::before {
+            content: '⚔';
+            color: var(--accent-bright);
+        }
+
+        .battles-list li:last-child {
+            border-bottom: none;
+        }
+
+        .xray-info {
+            background: rgba(90,122,74,0.1);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .xray-info h4 {
+            font-family: 'Oswald', sans-serif;
+            color: var(--accent-bright);
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .xray-info ul {
+            list-style: none;
+            padding: 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .xray-info li {
+            padding: 4px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .xray-info li::before {
+            content: '•';
+            color: var(--accent-bright);
+            position: absolute;
+            left: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .tank-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .tank-details {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-inner {
+                padding: 0 15px;
+            }
+
+            .logo-text {
+                font-size: 20px;
+            }
+
+            nav {
+                gap: 2px;
+            }
+
+            .nav-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .nav-btn .flag {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .stats {
+                gap: 30px;
+            }
+
+            .tanks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tank-details {
+                grid-template-columns: 1fr;
+            }
+
+            #tank-viewer {
+                height: 400px;
+            }
+
+            .filters-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-btn {
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+                letter-spacing: 2px;
+            }
+
+            .countries-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .tank-title {
+                font-size: 24px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        footer a {
+            color: var(--accent-bright);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-inner">
+            <a class="logo" onclick="showPage('home')">
+                <div class="logo-icon">🛡</div>
+                <div class="logo-text">Танко<span>педия</span></div>
+            </a>
+            <nav>
+                <button class="nav-btn active" onclick="showPage('home')" data-page="home">🏠 Главная</button>
+                <button class="nav-btn" onclick="showPage('ussr')" data-page="ussr"><span class="flag">🇷🇺</span> СССР</button>
+                <button class="nav-btn" onclick="showPage('germany')" data-page="germany"><span class="flag">🇩</span> Германия</button>
+                <button class="nav-btn" onclick="showPage('france')" data-page="france"><span class="flag">🇫🇷</span> Франция</button>
+                <button class="nav-btn" onclick="showPage('usa')" data-page="usa"><span class="flag">🇺🇸</span> США</button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div id="page-home" class="page active">
+            <div class="hero">
+                <h1>Энциклопедия<br>бронетехники</h1>
+                <p>Изучайте легендарные танки XX века в интерактивном 3D. Вращайте детализированные модели, изучайте характеристики и историю каждой боевой машины.</p>
+                <div class="century-badge">🎖 Танки XX века (1916-1999)</div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="total-countries">4</div>
+                    <div class="stat-label">Страны</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="total-tanks">0</div>
+                    <div class="stat-label">Танков</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3D</div>
+                    <div class="stat-label">Модели</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">X-Ray</div>
+                    <div class="stat-label">Режим</div>
+                </div>
+            </div>
+
+            <div class="countries-section">
+                <div class="section-title">Выберите страну</div>
+                <div class="countries-grid">
+                    <div class="country-card" onclick="showPage('ussr')">
+                        <span class="country-flag">🇷🇺</span>
+                        <div class="country-name">СССР</div>
+                        <div class="country-tanks-count" id="count-ussr">0 танков</div>
+                    </div>
+                    <div class="country-card" onclick="showPage('germany')">
+                        <span class="country-flag">🇩🇪</span>
+                        <div class="country-name">Германия</div>
+                        <div class="country-tanks-count" id="count-germany">0 танков</div>
+                    </div>
+                    <div class="country-card" onclick="showPage('france')">
+                        <span class="country-flag">🇫🇷</span>
+                        <div class="country-name">Франция</div>
+                        <div class="country-tanks-count" id="count-france">0 танков</div>
+                    </div>
+                    <div class="country-card" onclick="showPage('usa')">
+                        <span class="country-flag">🇺</span>
+                        <div class="country-name">США</div>
+                        <div class="country-tanks-count" id="count-usa">0 танков</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-ussr" class="page">
+            <div class="country-header">
+                <span class="flag-big">🇷🇺</span>
+                <h2>Советский Союз</h2>
+                <p>Легендарные танки, ковавшие победу на полях сражений</p>
+            </div>
+            <div class="filters-section">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label class="filter-label">Тип танка</label>
+                        <select class="filter-select" onchange="filterTanks('ussr', 'type', this.value)">
+                            <option value="all">Все типы</option>
+                            <option value="light">Лёгкие</option>
+                            <option value="medium">Средние</option>
+                            <option value="heavy">Тяжёлые</option>
+                            <option value="spg">САУ</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Год</label>
+                        <select class="filter-select" onchange="filterTanks('ussr', 'year', this.value)">
+                            <option value="all">Все годы</option>
+                            <option value="1935">1935</option>
+                            <option value="1940">1940</option>
+                            <option value="1943">1943</option>
+                            <option value="1944">1944</option>
+                            <option value="1946">1946</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="tanks-grid" id="ussr-tanks"></div>
+        </div>
+
+        <div id="page-germany" class="page">
+            <div class="country-header">
+                <span class="flag-big">🇩</span>
+                <h2>Германия</h2>
+                <p>Инженерное совершенство и мощь брони</p>
+            </div>
+            <div class="filters-section">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label class="filter-label">Тип танка</label>
+                        <select class="filter-select" onchange="filterTanks('germany', 'type', this.value)">
+                            <option value="all">Все типы</option>
+                            <option value="light">Лёгкие</option>
+                            <option value="medium">Средние</option>
+                            <option value="heavy">Тяжёлые</option>
+                            <option value="spg">САУ</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Год</label>
+                        <select class="filter-select" onchange="filterTanks('germany', 'year', this.value)">
+                            <option value="all">Все годы</option>
+                            <option value="1936">1936</option>
+                            <option value="1940">1940</option>
+                            <option value="1942">1942</option>
+                            <option value="1943">1943</option>
+                            <option value="1944">1944</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="tanks-grid" id="germany-tanks"></div>
+        </div>
+
+        <div id="page-france" class="page">
+            <div class="country-header">
+                <span class="flag-big">🇫</span>
+                <h2>Франция</h2>
+                <p>Забытые герои бронетанковых войск</p>
+            </div>
+            <div class="filters-section">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label class="filter-label">Тип танка</label>
+                        <select class="filter-select" onchange="filterTanks('france', 'type', this.value)">
+                            <option value="all">Все типы</option>
+                            <option value="light">Лёгкие</option>
+                            <option value="medium">Средние</option>
+                            <option value="heavy">Тяжёлые</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Год</label>
+                        <select class="filter-select" onchange="filterTanks('france', 'year', this.value)">
+                            <option value="all">Все годы</option>
+                            <option value="1936">1936</option>
+                            <option value="1937">1937</option>
+                            <option value="1946">1946</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="tanks-grid" id="france-tanks"></div>
+        </div>
+
+        <div id="page-usa" class="page">
+            <div class="country-header">
+                <span class="flag-big">🇺</span>
+                <h2>Соединённые Штаты</h2>
+                <p>Массовое производство и надёжность</p>
+            </div>
+            <div class="filters-section">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label class="filter-label">Тип танка</label>
+                        <select class="filter-select" onchange="filterTanks('usa', 'type', this.value)">
+                            <option value="all">Все типы</option>
+                            <option value="light">Лёгкие</option>
+                            <option value="medium">Средние</option>
+                            <option value="heavy">Тяжёлые</option>
+                            <option value="spg">САУ</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Год</label>
+                        <select class="filter-select" onchange="filterTanks('usa', 'year', this.value)">
+                            <option value="all">Все годы</option>
+                            <option value="1941">1941</option>
+                            <option value="1942">1942</option>
+                            <option value="1944">1944</option>
+                            <option value="1949">1949</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="tanks-grid" id="usa-tanks"></div>
+        </div>
+
+        <div id="page-tank" class="page">
+            <div class="tank-page">
+                <div class="tank-page-header">
+                    <button class="back-btn" onclick="goBack()">← Назад</button>
+                    <div class="tank-title" id="tank-page-title"></div>
+                </div>
+                <div class="tank-layout">
+                    <div class="viewer-container">
+                        <div class="viewer-header">
+                            <span>🖥 3D-модель</span>
+                            <div class="viewer-controls">
+                                <button class="viewer-ctrl-btn" onclick="resetCamera()">Сброс</button>
+                                <button class="viewer-ctrl-btn" id="xray-btn" onclick="toggleXRay()">X-Ray</button>
+                                <button class="viewer-ctrl-btn" onclick="toggleAutoRotate()">Вращение</button>
+                            </div>
+                        </div>
+                        <canvas id="tank-viewer"></canvas>
+                        <div class="viewer-footer">
+                            <span>ЛКМ — вращение | ПКМ — перемещение | Колёсико — масштаб</span>
+                            <span id="tank-model-info"></span>
+                        </div>
+                    </div>
+                    <div class="tank-details" id="tank-details"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        Танкопедия © 2025 — Образовательный проект | Танки XX века (1916-1999) | <a href="#">Источники</a>
+    </footer>
+
+    <script>
+        const tankData = {
+            // === СССР ===
+            't34-85': {
+                name: 'Т-34-85',
+                country: 'ussr',
+                icon: '🔧',
+                type: 'medium',
+                typeName: 'Средний танк',
+                year: 1944,
+                specs: {
+                    'Боевая масса': '32 т',
+                    'Экипаж': '5 человек',
+                    'Длина с пушкой': '6.10 м',
+                    'Ширина': '3.00 м',
+                    'Высота': '2.72 м',
+                    'Броня (лоб/борт/корма)': '90/45/45 мм',
+                    'Основное вооружение': '85-мм пушка ЗИС-С-53',
+                    'Пулемёты': '2×7.62-мм ДТ',
+                    'Боекомплект': '55 снарядов, 1890 патронов',
+                    'Двигатель': 'В-2-34, V-12, дизельный',
+                    'Мощность двигателя': '500 л.с.',
+                    'Удельная мощность': '15.6 л.с./т',
+                    'Максимальная скорость': '55 км/ч',
+                    'Запас хода': '360 км',
+                    'Преодолеваемый подъём': '35°',
+                    'Преодолеваемая стенка': '0.73 м',
+                    'Преодолеваемый ров': '2.5 м'
+                },
+                history: `<p><strong>Т-34-85</strong> — глубокая модернизация легендарного Т-34, разработанная в 1944 году конструкторским бюро завода №112 под руководством В.Г. Грабина. Главное отличие — установка новой трёхместной башни увеличенного диаметра с мощной 85-мм пушкой ЗИС-С-53, что значительно увеличило огневую мощь и удобство работы экипажа.</p>
+
+                <h4>История создания</h4>
+                <p>Необходимость усиления вооружения Т-34 стала очевидной после столкновений с немецкими тяжёлыми танками Tiger и Panther в 1943 году. 76-мм пушка Ф-34 уже не могла уверенно поражать их в лоб. Первоначально рассматривалась установка 85-мм пушки в старой башне (Т-34-85 обр. 1943 г.), но это оказалось неудобным для экипажа.</p>
+
+                <p>Новая башня, разработанная на основе башни танка КВ-85, позволила разместить третьего члена экипажа — наводчика, освободив командира от функций наводчика. Это значительно повысило эффективность управления огнём и боевые возможности танка.</p>
+
+                <h4>Боевое применение</h4>
+                <p>Т-34-85 поступил на вооружение в марте 1944 года и сразу стал основным средним танком РККА. Танк активно участвовал в операции «Багратион», Висло-Одерской операции, штурме Берлина. 85-мм пушка позволяла эффективно бороться с любыми немецкими танками на дистанциях до 1000 метров.</p>
+
+                <p>После войны Т-34-85 состоял на вооружении советской армии до конца 1950-х годов, активно экспортировался и участвовал во многих локальных конфликтах, включая Корейскую войну, где показал себя достойным противником американских M4 Sherman и M26 Pershing.</p>
+
+                <h4>Производство и наследие</h4>
+                <p>Всего было выпущено около 22,500 Т-34-85. Танк производился не только в СССР, но и по лицензии в Польше и Чехословакии до 1950-х годов. Простота конструкции, надёжность и мощное вооружение сделали Т-34-85 одним из самых массовых и успешных танков в истории.</p>`,
+                battles: [
+                    'Операция «Багратион» (июнь-август 1944)',
+                    'Львовско-Сандомирская операция (июль 1944)',
+                    'Ясско-Кишинёвская операция (август 1944)',
+                    'Висло-Одерская операция (январь 1945)',
+                    'Восточно-Прусская операция (январь-апрель 1945)',
+                    'Битва за Берлин (апрель-май 1945)',
+                    'Маньчжурская операция (август 1945)',
+                    'Корейская война (1950-1953)'
+                ],
+                xray: {
+                    engine: 'Дизельный двигатель В-2-34 расположен в корме танка. V-образный 12-цилиндровый двигатель жидкостного охлаждения мощностью 500 л.с.',
+                    transmission: 'Трансмиссия включает главный фрикцион сухого трения, 4-ступенчатую коробку передач, бортовые фрикционы и тормоза',
+                    crew: 'Экипаж из 5 человек: командир (справа в башне), наводчик (слева в башне), заряжающий (в башне), механик-водитель (в корпусе слева), радист-пулемётчик (в корпусе справа)',
+                    ammunition: 'Боекомплект 55 снарядов размещён в башне и корпусе. Топливные баки ёмкостью 610 л расположены по бортам корпуса',
+                    armament: '85-мм пушка ЗИС-С-53 с длиной ствола 54.6 калибра. Спаренный пулемёт ДТ. Курсовой пулемёт ДТ у радиста'
+                }
+            },
+
+            'kv2': {
+                name: 'КВ-2',
+                country: 'ussr',
+                icon: '💥',
+                type: 'heavy',
+                typeName: 'Тяжёлый танк прорыва',
+                year: 1940,
+                specs: {
+                    'Боевая масса': '52 т',
+                    'Экипаж': '6 человек',
+                    'Длина с пушкой': '6.95 м',
+                    'Ширина': '3.32 м',
+                    'Высота': '3.34 м',
+                    'Броня (лоб/борт/корма)': '110/75/75 мм',
+                    'Основное вооружение': '152-мм гаубица М-10Т',
+                    'Пулемёты': '3×7.62-мм ДТ',
+                    'Боекомплект': '36 снарядов, 3087 патронов',
+                    'Двигатель': 'В-2К, V-12, дизельный',
+                    'Мощность двигателя': '600 л.с.',
+                    'Удельная мощность': '11.5 л.с./т',
+                    'Максимальная скорость': '35 км/ч',
+                    'Запас хода': '250 км',
+                    'Преодолеваемый подъём': '36°',
+                    'Преодолеваемая стенка': '0.87 м',
+                    'Преодолеваемый ров': '2.7 м'
+                },
+                history: `<p><strong>КВ-2</strong> — тяжёлый штурмовой танк, созданный на базе КВ-1 и оснащённый мощнейшей 152-мм гаубицей М-10Т образца 1938/40 годов. Его массивная башня «Менделеев» (названная в честь инженера Н.В. Менделеева) стала визитной карточкой машины и одним из самых узнаваемых образов советской бронетехники.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в январе 1940 года на Кировском заводе в Ленинграде под руководством Ж.Я. Котина. Танк создавался специально для прорыва укреплённых позиций линии Маннергейма во время Советско-финской войны (1939-1940). Требовалась машина, способная разрушать долговременные огневые точки (ДОТы) и фортификационные сооружения.</p>
+
+                <p>На танк установили башню увеличенного размера с 152-мм гаубицей. Башня имела вертикальные стенки и достигала высоты 3.34 метра, что делало танк очень заметным на поле боя. Бронирование башни достигало 110 мм в лобовой части.</p>
+
+                <h4>Боевое применение</h4>
+                <p>КВ-2 участвовал в заключительных боях Советско-финской войны, где показал высокую эффективность против финских укреплений. В начале Великой Отечественной войны эти танки наводили ужас на немецкие войска. 152-мм снаряды буквально разрывали немецкие танки и разрушали укрепления.</p>
+
+                <p>Однако низкая скорость (35 км/ч), огромный вес (52 тонны), частые поломки трансмиссии и двигателя, а также огромные габариты делали танк уязвимым. Высокий силуэт был отличной мишенью для артиллерии. Многие КВ-2 были потеряны не в бою, а из-за технических неисправностей или брошены при отступлении.</p>
+
+                <h4>Производство</h4>
+                <p>Производство КВ-2 велось с февраля 1940 по октябрь 1941 года на Кировском заводе. Всего было выпущено 334 танка. С началом войны и эвакуацией завода производство было прекращено. Несколько захваченных КВ-2 использовались вермахтом под обозначением Panzerkampfwagen KV-II 754(r).</p>`,
+                battles: [
+                    'Советско-финская война (февраль-март 1940)',
+                    'Приграничные сражения (июнь 1941)',
+                    'Оборона Брестской крепости (июнь 1941)',
+                    'Сражение под Расейняем (июнь 1941)',
+                    'Оборона Ленинграда (1941-1944)',
+                    'Битва за Москву (октябрь 1941 - январь 1942)'
+                ],
+                xray: {
+                    engine: 'Дизельный двигатель В-2К мощностью 600 л.с. расположен в кормовой части. Увеличенная мощность необходима для перемещения 52-тонной машины',
+                    transmission: 'Механическая трансмиссия с главным фрикционом сухого трения и 4-ступенчатой коробкой передач. Частые поломки из-за перегрузок',
+                    crew: 'Экипаж из 6 человек: командир, наводчик, 2 заряжающих (работа с тяжёлыми 152-мм снарядами), механик-водитель, радист-пулемётчик',
+                    ammunition: '36 снарядов для 152-мм гаубицы размещены в башне и корпусе. Снаряды очень тяжёлые (около 40 кг), требовали двух заряжающих',
+                    armament: '152-мм гаубица М-10Т с длиной ствола 12.4 калибра. Угол возвышения от -3° до +18°. Три пулемёта ДТ для защиты от пехоты'
+                }
+            },
+
+            'is2': {
+                name: 'ИС-2',
+                country: 'ussr',
+                icon: '⭐',
+                type: 'heavy',
+                typeName: 'Тяжёлый танк',
+                year: 1943,
+                specs: {
+                    'Боевая масса': '46 т',
+                    'Экипаж': '4 человека',
+                    'Длина с пушкой': '9.75 м',
+                    'Ширина': '3.07 м',
+                    'Высота': '2.73 м',
+                    'Броня (лоб/борт/корма)': '120/90/60 мм',
+                    'Основное вооружение': '122-мм пушка Д-25Т',
+                    'Пулемёты': '1×12.7-мм ДШК, 2×7.62-мм ДТ',
+                    'Боекомплект': '28 снарядов, 1000 патронов (12.7-мм), 2500 патронов (7.62-мм)',
+                    'Двигатель': 'В-2ИС, V-12, дизельный',
+                    'Мощность двигателя': '520 л.с.',
+                    'Удельная мощность': '11.3 л.с./т',
+                    'Максимальная скорость': '37 км/ч',
+                    'Запас хода': '240 км',
+                    'Преодолеваемый подъём': '36°',
+                    'Преодолеваемая стенка': '1.0 м',
+                    'Преодолеваемый ров': '2.8 м'
+                },
+                history: `<p><strong>ИС-2</strong> (Иосиф Сталин) — один из самых мощных и знаменитых тяжёлых танков Второй мировой войны. Создан в 1943 году на основе ИС-1 с установкой 122-мм пушки Д-25Т, способной пробивать любую немецкую броню на всех реальных дистанциях боя.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в октябре 1943 года на Челябинском Кировском заводе (ЧКЗ) под руководством Ж.Я. Котина. Необходимость создания нового тяжёлого танка возникла после появления у немцев Tiger II и усиления бронирования Panther. 85-мм пушка ИС-1 оказалась недостаточно мощной.</p>
+
+                <p>Выбор 122-мм орудия был обусловлен наличием мощной корпусной пушки А-19, которая после доработки (устройство досылки, эжектор для удаления пороховых газов) стала танковой пушкой Д-25Т. Несмотря на низкий темп стрельбы (2-3 выстрела в минуту), снаряд массой 25 кг обладал сокрушительным действием.</p>
+
+                <h4>Конструкция</h4>
+                <p>ИС-2 получил литую башню с толщиной брони до 120 мм и рациональными углами наклона. Корпус также имел усиленное бронирование. Важным нововведением стала цельнолитая носовая часть корпуса («прямой нос» вместо ступенчатого у ИС-1), что повысило прочность и технологичность.</p>
+
+                <p>Танк оснащался двигателем В-2ИС мощностью 520 л.с., что обеспечивало удельную мощность 11.3 л.с./т — приемлемый показатель для тяжёлого танка. Ходовая часть включала 6 опорных катков на борт с индивидуальной торсионной подвеской.</p>
+
+                <h4>Боевое применение</h4>
+                <p>ИС-2 впервые применили в феврале 1944 года в Корсунь-Шевченковской операции. Танки использовались как танки прорыва, поддерживая пехоту при штурме укреплённых позиций. 122-мм снаряды эффективно уничтожали не только танки, но и долговременные огневые точки.</p>
+
+                <p>В 1944-1945 годах ИС-2 составляли основу тяжёлых танковых полков прорыва. Именно ИС-2 1-го Белорусского фронта водрузили знамя Победы над Рейхстагом. После войны ИС-2 состоял на вооружении советской армии до 1950-х годов, поставлялся в Китай, КНДР, Вьетнам, Египет и другие страны.</p>
+
+                <h4>Производство</h4>
+                <p>Производство ИС-2 велось с октября 1943 по май 1946 года на ЧКЗ. Всего выпущено 3,854 танка. В 1944 году проведена модернизация — установлена пушка с улучшенным досылателем и изменена форма башни (ИС-2 обр. 1944 г.).</p>`,
+                battles: [
+                    'Корсунь-Шевченковская операция (февраль 1944)',
+                    'Проскуровско-Черновицкая операция (март-апрель 1944)',
+                    'Львовско-Сандомирская операция (июль 1944)',
+                    'Висло-Одерская операция (январь 1945)',
+                    'Восточно-Прусская операция (январь-апрель 1945)',
+                    'Штурм Берлина (апрель-май 1945)',
+                    'Советско-японская война (август 1945)',
+                    'Корейская война (1950-1953)'
+                ],
+                xray: {
+                    engine: 'Дизельный двигатель В-2ИС мощностью 520 л.с. в кормовой части. Улучшенная система охлаждения по сравнению с КВ',
+                    transmission: 'Механическая трансмиссия с главным фрикционом, 4-ступенчатой КПП и планетарными механизмами поворота',
+                    crew: 'Экипаж из 4 человек: командир (справа в башне), наводчик (слева в башне), заряжающий (в башне), механик-водитель (в корпусе)',
+                    ammunition: '28 снарядов для 122-мм пушки размещены в башне и корпусе. Тяжёлые снаряды (25 кг) ограничивают скорострельность',
+                    armament: '122-мм пушка Д-25Т с длиной ствола 43 калибра. Скорострельность 2-3 выстр/мин. Зенитный пулемёт ДШК на башне'
+                }
+            },
+
+            't54': {
+                name: 'Т-54',
+                country: 'ussr',
+                icon: '',
+                type: 'medium',
+                typeName: 'Средний танк',
+                year: 1946,
+                specs: {
+                    'Боевая масса': '36 т',
+                    'Экипаж': '4 человека',
+                    'Длина с пушкой': '9.0 м',
+                    'Ширина': '3.27 м',
+                    'Высота': '2.40 м',
+                    'Броня (лоб/борт/корма)': '100/80/40 мм',
+                    'Основное вооружение': '100-мм пушка Д-10Т',
+                    'Пулемёты': '2×7.62-мм СГМТ, 1×12.7-мм ДШК',
+                    'Боекомплект': '34 снаряда, 3500 патронов (7.62-мм), 500 патронов (12.7-мм)',
+                    'Двигатель': 'В-54, V-12, дизельный',
+                    'Мощность двигателя': '520 л.с.',
+                    'Удельная мощность': '14.4 л.с./т',
+                    'Максимальная скорость': '50 км/ч',
+                    'Запас хода': '360 км',
+                    'Преодолеваемый подъём': '32°',
+                    'Преодолеваемая стенка': '0.8 м',
+                    'Преодолеваемый ров': '2.7 м'
+                },
+                history: `<p><strong>Т-54</strong> — советский средний танк, принятый на вооружение в 1946 году. Стал одним из самых массовых танков в истории, положил начало целому семейству танков, которые состояли на вооружении десятков стран мира.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в 1945-1946 годах в КБ завода №183 (Уралвагонзавод) под руководством А.А. Морозова. Танк создавался как развитие Т-44 с учётом опыта Второй мировой войны. Главные нововведения: новая полусферическая башня с 100-мм пушкой, улучшенное бронирование, двигатель В-54.</p>
+
+                <p>100-мм пушка Д-10Т (разработанная В.Г. Грабиным) стала мощнейшим оружием для среднего танка того времени. Она могла пробить броню любого западного танка 1940-х годов. Полусферическая форма башни обеспечивала лучшую снарядостойкость.</p>
+
+                <h4>Конструкция</h4>
+                <p>Т-54 получил низкий силуэт (высота всего 2.40 м), что делало его трудной мишенью. Бронирование лба корпуса достигало 100 мм с рациональными углами наклона. Ходовая часть — 5 опорных катков на борт с торсионной подвеской.</p>
+
+                <p>Танк оснащался 12-цилиндровым дизелем В-54 мощностью 520 л.с., что обеспечивало хорошую подвижность. Важным новшеством стала система ППО (противопожарного оборудования) и подкачки воздуха в цилиндры двигателя.</p>
+
+                <h4>Производство и служба</h4>
+                <p>Производство Т-54 началось в 1947 году и продолжалось до 1958 года. Всего в СССР выпущено около 35,000 танков Т-54 и Т-55 (модернизированной версии). Танк производился по лицензии в Польше, Чехословакии, Китае (Тип 59).</p>
+
+                <p>Т-54/55 участвовали практически во всех конфликтах второй половины XX века: Суэцкий кризис (1956), Шестидневная война (1967), война Судного дня (1973), Афганская война (1979-1989), ирано-иракская война (1980-1988) и многие другие.</p>`,
+                battles: [
+                    'Венгерское восстание (1956)',
+                    'Суэцкий кризис (1956)',
+                    'Шестидневная война (1967)',
+                    'Война Судного дня (1973)',
+                    'Вьетнамская война (1955-1975)',
+                    'Индийско-пакистанские войны (1965, 1971)',
+                    'Афганская война (1979-1989)',
+                    'Ирано-иракская война (1980-1988)'
+                ],
+                xray: {
+                    engine: 'Дизельный двигатель В-54 мощностью 520 л.с. с системой подкачки воздуха. Расположен поперечно в корме',
+                    transmission: 'Механическая трансмиссия с главным фрикционом, 5-ступенчатой КПП и бортовыми фрикционами',
+                    crew: 'Экипаж из 4 человек: командир, наводчик, заряжающий (в башне), механик-водитель (в корпусе)',
+                    ammunition: '34 снаряда для 100-мм пушки. Топливные баки ёмкостью 680 л расположены по бортам и в корме',
+                    armament: '100-мм нарезная пушка Д-10Т с длиной ствола 56 калибров. Спаренный пулемёт СГМТ. Зенитный ДШК'
+                }
+            },
+
+            'bt7': {
+                name: 'БТ-7',
+                country: 'ussr',
+                icon: '⚡',
+                type: 'light',
+                typeName: 'Лёгкий танк',
+                year: 1935,
+                specs: {
+                    'Боевая масса': '14.6 т', 'Экипаж': '3 человека', 'Длина': '5.58 м', 'Ширина': '2.33 м', 'Высота': '2.28 м',
+                    'Броня (лоб/борт/корма)': '13/13/10 мм', 'Основное вооружение': '45-мм пушка 20К', 'Пулемёты': '1×7.62-мм ДТ',
+                    'Боекомплект': '115 снарядов, 2772 патрона', 'Двигатель': 'М-17Т, V-12, бензиновый', 'Мощность': '500 л.с.',
+                    'Удельная мощность': '34.2 л.с./т', 'Максимальная скорость': '72 км/ч', 'Запас хода': '360 км'
+                },
+                history: `<p><strong>БТ-7</strong> — советский лёгкий колёсно-гусеничный танк, один из символов довоенного танкостроения СССР. Разработан в 1935 году на Харьковском паровозостроительном заводе под руководством А.А. Морозова. Стал развитием знаменитого БТ-5, получив новый сварной корпус, улучшенную подвеску и более мощный двигатель.</p>
+                <h4>Конструкция</h4><p>Главная особенность — возможность движения как на гусеницах, так и на колёсах (снимая гусеницы). На колёсах развивал скорость до 72 км/ч, что делало его самым быстрым танком своего времени. Ходовая часть типа «Кристи» обеспечивала отличную плавность хода. Бронирование было тонким (до 13 мм), но для 1930-х годов это компенсировалось скоростью и манёвренностью.</p>
+                <h4>Боевое применение</h4><p>БТ-7 активно использовался в боях на Халхин-Голе (1939), Советско-финской войне и в начальный период Великой Отечественной. В 1941 году лёгкая броня стала его главным недостатком, но до 1943 года БТ-7 оставался одним из основных танков РККА. С 1944 года начал выводиться из войск, заменённый на Т-34.</p>`,
+                battles: ['Бои на Халхин-Голе (1939)', 'Советско-финская война (1939-1940)', 'Приграничные сражения (июнь 1941)', 'Битва за Москву (1941)', 'Сталинградская битва (1942)'],
+                xray: {
+                    engine: 'Авиационный двигатель М-17Т V-12 мощностью 500 л.с. (модификация BMW VI). Обеспечивал рекордную удельную мощность',
+                    transmission: 'Уникальная колёсно-гусеничная трансмиссия. Привод на 4 ведущих колеса при снятии гусениц',
+                    crew: 'Экипаж из 3 человек: командир (в башне), наводчик-заряжающий (в башне), механик-водитель (в корпусе)',
+                    ammunition: '115 снарядов для 45-мм пушки. Топливные баки ёмкостью 420 л',
+                    armament: '45-мм пушка 20К обр. 1934 г. Отличная для лёгкого танка пробиваемость. Спаренный пулемёт ДТ'
+                }
+            },
+            'su100': {
+                name: 'СУ-100',
+                country: 'ussr',
+                icon: '🎯',
+                type: 'spg',
+                typeName: 'ПТ-САУ',
+                year: 1944,
+                specs: {
+                    'Боевая масса': '31.6 т', 'Экипаж': '4 человека', 'Длина с пушкой': '8.15 м', 'Ширина': '3.00 м', 'Высота': '2.25 м',
+                    'Броня (лоб/борт/корма)': '75/45/40 мм', 'Основное вооружение': '100-мм пушка Д-10С', 'Пулемёты': 'Нет',
+                    'Боекомплект': '34 снаряда', 'Двигатель': 'В-2-34, V-12, дизельный', 'Мощность': '500 л.с.',
+                    'Удельная мощность': '15.8 л.с./т', 'Максимальная скорость': '50 км/ч', 'Запас хода': '310 км'
+                },
+                history: `<p><strong>СУ-100</strong> — одна из лучших советских противотанковых самоходных установок Второй мировой войны. Создана на базе Т-34-85, но получила более мощную 100-мм пушку Д-10С, способную пробивать лобовую броню Tiger II с дистанции 1500 метров.</p>
+                <h4>История создания</h4><p>Разработана в 1944 году в КБ Уралмашзавода под руководством Л.И. Горлицкого. Необходимость возникла после появления у немцев тяжёлых танков с усиленной бронёй. СУ-100 решила проблему: мощная пушка, надёжное шасси Т-34, низкий силуэт.</p>
+                <h4>Боевое применение</h4><p>Впервые применена в январе 1945 года. СУ-100 доказала свою эффективность в Венгрии, где уничтожила десятки немецких Tiger и Panther. Машина ценилась за точность огня, хорошую бронезащиту в лобовой проекции и отличную подвижность. После войны стояла на вооружении более 30 стран, участвовала в конфликтах на Ближнем Востоке и в Африке.</p>`,
+                battles: ['Венская операция (март-апрель 1945)', 'Пражская операция (май 1945)', 'Шестидневная война (1967)', 'Война Судного дня (1973)', 'Ангольская гражданская война (1975-2002)'],
+                xray: {
+                    engine: 'Дизельный двигатель В-2-34 мощностью 500 л.с. в корме. Надёжный и экономичный',
+                    transmission: 'Механическая трансмиссия от Т-34-85. 4-ступенчатая КПП, бортовые фрикционы',
+                    crew: 'Экипаж из 4 человек: командир, наводчик, заряжающий (в рубке), механик-водитель (в корпусе)',
+                    ammunition: '34 снаряда для 100-мм пушки. Размещены в рубке и по бортам. Нет пулемётов',
+                    armament: '100-мм пушка Д-10С с длиной ствола 56 калибров. Мощнейшее ПТО своего времени'
+                }
+            },
+
+            // === ГЕРМАНИЯ ===
+            'tiger1': {
+                name: 'Tiger I',
+                country: 'germany',
+                icon: '🐯',
+                type: 'heavy',
+                typeName: 'Тяжёлый танк',
+                year: 1942,
+                specs: {
+                    'Боевая масса': '57 т',
+                    'Экипаж': '5 человек',
+                    'Длина с пушкой': '8.45 м',
+                    'Ширина': '3.56 м',
+                    'Высота': '2.93 м',
+                    'Броня (лоб/борт/корма)': '100/80/80 мм',
+                    'Основное вооружение': '88-мм пушка KwK 36 L/56',
+                    'Пулемёты': '2×7.92-мм MG 34',
+                    'Боекомплект': '92 снаряда, 5700 патронов',
+                    'Двигатель': 'Maybach HL230 P45, V-12, бензиновый',
+                    'Мощность двигателя': '700 л.с.',
+                    'Удельная мощность': '12.3 л.с./т',
+                    'Максимальная скорость': '45 км/ч (по дороге), 20 км/ч (по бездорожью)',
+                    'Запас хода': '195 км (по дороге), 110 км (по бездорожью)',
+                    'Преодолеваемый подъём': '35°',
+                    'Преодолеваемая стенка': '0.79 м',
+                    'Преодолеваемый ров': '2.3 м'
+                },
+                history: `<p><strong>Tiger I</strong> (Panzerkampfwagen VI Tiger Ausf. E, Sd.Kfz. 181) — один из самых известных и узнаваемых танков в истории. Его 88-мм пушка KwK 36 могла уничтожить любой союзный танк на дистанции более 2000 метров, а мощное бронирование делало его практически неуязвимым для большинства противотанковых средств 1942-1943 годов.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в 1941-1942 годах фирмой Henschel под руководством Фердинанда Порше и Эрвина Адерса. Толчком к созданию стал шок от встречи с советскими Т-34 и КВ-1 в 1941 году. Немецкие Pz.III и Pz.IV оказались бессильны против советской брони.</p>
+
+                <p>Конкурс на тяжёлый танк выиграла фирма Henschel. Важную роль сыграла 88-мм зенитная пушка FlaK 18/36/37, которая показала отличные результаты как противотанковое оружие. Её танковая версия KwK 36 L/56 стала основным вооружением Tiger.</p>
+
+                <h4>Конструкция</h4>
+                <p>Tiger I имел вертикальное бронирование (в отличие от наклонного у Т-34), что было менее эффективным, но упрощало производство. Лобовая броня достигала 100 мм, бортовая — 80 мм. Башня цилиндрической формы с командирской башенкой.</p>
+
+                <p>Танк оснащался бензиновым двигателем Maybach HL230 P45 мощностью 700 л.с. Трансмиссия включала 8-ступенчатую коробку передач (4 передачи вперёд для движения по пересечённой местности и 4 для движения по дороге). Ходовая часть — «шахматное» расположение опорных катков.</p>
+
+                <h4>Боевое применение</h4>
+                <p>Первое боевое применение — под Ленинградом в сентябре 1942 года. Массово использовался в битве на Курской дуге (июль 1943), где показал высокую эффективность, но также выявил недостатки: низкую надёжность, сложность обслуживания, большой расход топлива.</p>
+
+                <p>Tiger I наводил ужас на союзные войска. Один танк мог подбить несколько вражеских машин, не получая повреждений. Однако низкая мобильность, частые поломки и сложность эвакуации с поля боя ограничивали его боевую ценность.</p>
+
+                <h4>Производство</h4>
+                <p>Производство велось с августа 1942 по август 1944 года на заводе Henschel в Касселе. Всего выпущено 1,347 танков. Каждый Tiger стоил 250,000 рейхсмарок (в 2 раза больше Pz.IV). Многие танки были потеряны не в бою, а из-за технических неисправностей или нехватки топлива.</p>`,
+                battles: [
+                    'Битва за Ленинград (сентябрь 1942)',
+                    'Сражение под Харьковом (февраль-март 1943)',
+                    'Курская битва (июль 1943)',
+                    'Битва при Прохоровке (12 июля 1943)',
+                    'Высадка в Нормандии (июнь 1944)',
+                    'Оборона Арнемского моста (сентябрь 1944)',
+                    'Арденнская операция (декабрь 1944 - январь 1945)',
+                    'Оборона Берлина (апрель-май 1945)'
+                ],
+                xray: {
+                    engine: 'Бензиновый двигатель Maybach HL230 P45 V-12 мощностью 700 л.с. с жидкостным охлаждением. Расположен в корме',
+                    transmission: '8-ступенчатая коробка передач Maybach-Olvar с 4 передачами вперёд для бездорожья и 4 для дороги. Сложная в обслуживании',
+                    crew: 'Экипаж из 5 человек: командир (справа в башне), наводчик (слева впереди в башне), заряжающий (слева сзади в башне), механик-водитель (в корпусе слева), радист (в корпусе справа)',
+                    ammunition: '92 снаряда для 88-мм пушки размещены в башне и по бортам корпуса. Топливные баки ёмкостью 540 л',
+                    armament: '88-мм пушка KwK 36 L/56 с длиной ствола 56 калибров. Отличная точность и пробиваемость. Два пулемёта MG 34'
+                }
+            },
+
+            'panther': {
+                name: 'Panther',
+                country: 'germany',
+                icon: '🐆',
+                type: 'medium',
+                typeName: 'Средний танк',
+                year: 1943,
+                specs: {
+                    'Боевая масса': '44.8 т',
+                    'Экипаж': '5 человек',
+                    'Длина с пушкой': '8.66 м',
+                    'Ширина': '3.27 м',
+                    'Высота': '2.99 м',
+                    'Броня (лоб/борт/корма)': '80/50/40 мм (с наклоном)',
+                    'Основное вооружение': '75-мм пушка KwK 42 L/70',
+                    'Пулемёты': '2×7.92-мм MG 34',
+                    'Боекомплект': '79 снарядов, 5100 патронов',
+                    'Двигатель': 'Maybach HL230 P30, V-12, бензиновый',
+                    'Мощность двигателя': '700 л.с.',
+                    'Удельная мощность': '15.6 л.с./т',
+                    'Максимальная скорость': '55 км/ч (по дороге), 30 км/ч (по бездорожью)',
+                    'Запас хода': '250 км (по дороге), 160 км (по бездорожью)',
+                    'Преодолеваемый подъём': '35°',
+                    'Преодолеваемая стенка': '0.90 м',
+                    'Преодолеваемый ров': '2.4 м'
+                },
+                history: `<p><strong>Panther</strong> (Panzerkampfwagen V Panther, Sd.Kfz. 171) — один из лучших средних танков Второй мировой войны, сочетающий мощное вооружение, отличную бронезащиту и хорошую подвижность. Создан как прямой ответ на советский Т-34 и стал прообразом послевоенных основных боевых танков.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в 1942 году фирмами MAN и Daimler-Benz после того, как немецкие войска столкнулись с Т-34 на Восточном фронте. 25 ноября 1941 года группа немецких офицеров и инженеров изучила захваченный Т-34 и пришла к выводу о необходимости скопировать его лучшие черты: наклонную броню, широкие гусеницы, дизельный двигатель.</p>
+
+                <p>Проект MAN победил в конкурсе. Главный конструктор — Пауль Даймлер. Важную роль сыграл профессор Фердинанд Порше. 75-мм пушка KwK 42 L/70 (разработана Rheinmetall) стала одной из самых эффективных танковых пушек войны.</p>
+
+                <h4>Конструкция</h4>
+                <p>Panther получил наклонную броню (лоб корпуса 55°), что значительно повышало снарядостойкость. Приведённая толщина лба достигала 140 мм. Башня также имела наклонные стенки. Широкие гусеницы (660 мм) обеспечивали хорошую проходимость.</p>
+
+                <p>75-мм пушка KwK 42 L/70 с длиной ствола 70 калибров обладала отличной баллистикой и могла пробить брону любого союзного танка на дистанциях свыше 2000 метров. Скорострельность достигала 15 выстрелов в минуту.</p>
+
+                <h4>Боевое применение</h4>
+                <p>Первое применение — в битве на Курской дуге (июль 1943). Из-за спешки с запуском в производство первые Panther страдали от «детских болезней»: частые пожары двигателя, поломки трансмиссии, проблемы с ходовой частью.</p>
+
+                <p>К 1944 году большинство проблем было устранено. Panther стал основным танком немецких панцердивизий. Танк превосходил T-34-85 и M4 Sherman по всем параметрам, но уступал в надёжности и простоте обслуживания.</p>
+
+                <h4>Производство</h4>
+                <p>Производство велось с января 1943 по апрель 1945 года фирмами MAN, Daimler-Benz, MNH и Henschel. Всего выпущено около 6,000 танков (включая модификации Ausf. D, A, G). Panther стал вторым по массовости немецким танком после Pz.IV.</p>`,
+                battles: [
+                    'Курская битва (июль 1943)',
+                    'Битва при Прохоровке (12 июля 1943)',
+                    'Битва за Днепр (август-декабрь 1943)',
+                    'Высадка в Нормандии (июнь 1944)',
+                    'Операция «Market Garden» (сентябрь 1944)',
+                    'Арденнская операция (декабрь 1944 - январь 1945)',
+                    'Оборона Берлина (апрель-май 1945)'
+                ],
+                xray: {
+                    engine: 'Бензиновый двигатель Maybach HL230 P30 V-12 мощностью 700 л.с. Склонен к перегреву и пожарам на ранних моделях',
+                    transmission: '7-ступенчатая коробка передач ZF AK 7-200 с двойным главным фрикционом. Частые поломки из-за перегрузок',
+                    crew: 'Экипаж из 5 человек: командир, наводчик, заряжающий (в башне), механик-водитель, радист-пулемётчик (в корпусе)',
+                    ammunition: '79 снарядов для 75-мм пушки. Топливные баки ёмкостью 720 л расположены по бортам',
+                    armament: '75-мм пушка KwK 42 L/70 с длиной ствола 70 калибров. Отличная точность и пробиваемость. Два пулемёта MG 34'
+                }
+            },
+
+            'tiger2': {
+                name: 'Tiger II',
+                country: 'germany',
+                icon: '👑',
+                type: 'heavy',
+                typeName: 'Тяжёлый танк',
+                year: 1944,
+                specs: {
+                    'Боевая масса': '68.5 т',
+                    'Экипаж': '5 человек',
+                    'Длина с пушкой': '10.29 м',
+                    'Ширина': '3.63 м',
+                    'Высота': '3.09 м',
+                    'Броня (лоб/борт/корма)': '150/80/80 мм (с наклоном)',
+                    'Основное вооружение': '88-мм пушка KwK 43 L/71',
+                    'Пулемёты': '2×7.92-мм MG 34',
+                    'Боекомплект': '86 снарядов, 5800 патронов',
+                    'Двигатель': 'Maybach HL230 P30, V-12, бензиновый',
+                    'Мощность двигателя': '700 л.с.',
+                    'Удельная мощность': '10.2 л.с./т',
+                    'Максимальная скорость': '41 км/ч (по дороге), 25 км/ч (по бездорожью)',
+                    'Запас хода': '170 км (по дороге), 110 км (по бездорожью)',
+                    'Преодолеваемый подъём': '30°',
+                    'Преодолеваемая стенка': '0.85 м',
+                    'Преодолеваемый ров': '2.5 м'
+                },
+                history: `<p><strong>Tiger II</strong> (также известен как Königstiger — «Королевский Тигр», Panzerkampfwagen VI Ausf. B, Sd.Kfz. 182) — самый тяжёлый серийный танк Вермахта и один из самых мощных танков Второй мировой войны. Его лобовая броня в 150 мм с рациональными углами наклона была практически неуязвима для большинства союзных противотанковых средств.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в 1943 году фирмой Henschel под руководством Эрвина Адерса как развитие Tiger I с учётом опыта боёв на Восточном фронте. Требования: усиленное бронирование, более мощная пушка, улучшенная подвижность.</p>
+
+                <p>Конкурировали два проекта: Porsche (с электромеханической трансмиссией) и Henschel (с механической). Победил проект Henschel как более надёжный. 88-мм пушка KwK 43 L/71 — самая мощная немецкая танковая пушка войны.</p>
+
+                <h4>Конструкция</h4>
+                <p>Tiger II получил наклонную броню (лоб корпуса 50°, лоб башни 10°). Приведённая толщина лба корпуса достигала 230 мм! Башня имела характерную округлую форму («башня Порше» на первых 50 машинах, затем «башня Henschel» с более пологим лбом).</p>
+
+                <p>88-мм пушка KwK 43 L/71 с длиной ствола 71 калибр обеспечивала пробитие 200 мм брони на дистанции 1000 метров. Это позволяло уничтожать любой союзный танк с безопасной дистанции. Скорострельность — 6-8 выстрелов в минуту.</p>
+
+                <h4>Боевое применение</h4>
+                <p>Первое применение — в Нормандии (июль 1944) в составе тяжёлых танковых батальонов (sPzAbt). Tiger II наводил ужас на союзников: один танк мог подбить десятки вражеских машин. Однако огромный вес (68.5 тонн) делал танк маломобильным.</p>
+
+                <p>Низкая удельная мощность (10.2 л.с./т), частые поломки трансмиссии и двигателя, огромный расход топлива (на 100 км по дороге — 500 литров бензина), сложность эвакуации — всё это ограничивало боевое применение. Многие танки были потеряны из-за технических неисправностей или нехватки топлива.</p>
+
+                <h4>Производство</h4>
+                <p>Производство велось с января 1944 по март 1945 года на заводе Henschel. Всего выпущено 492 танка. Каждый Tiger II стоил 321,000 рейхсмарок. Несмотря на мощь, танк не мог переломить ход войны из-за малочисленности и технических проблем.</p>`,
+                battles: [
+                    'Нормандия (июль-август 1944)',
+                    'Операция «Market Garden» (сентябрь 1944)',
+                    'Дебреценская операция (октябрь 1944)',
+                    'Операция «Panzerfaust» в Венгрии (октябрь 1944)',
+                    'Арденнская операция (декабрь 1944 - январь 1945)',
+                    'Оборона Вены (апрель 1945)',
+                    'Битва за Берлин (апрель-май 1945)'
+                ],
+                xray: {
+                    engine: 'Бензиновый двигатель Maybach HL230 P30 V-12 мощностью 700 л.с. Недостаточная мощность для 68.5-тонной машины',
+                    transmission: '8-ступенчатая коробка передач Maybach-Olvar. Частые поломки из-за перегрузок. Сложная в ремонте',
+                    crew: 'Экипаж из 5 человек: командир, наводчик, заряжающий (в башне), механик-водитель, радист (в корпусе)',
+                    ammunition: '86 снарядов для 88-мм пушки. Топливные баки ёмкостью 860 л. Огромный расход топлива',
+                    armament: '88-мм пушка KwK 43 L/71 — самая мощная немецкая танковая пушка. Длина ствола 71 калибр. Два пулемёта MG 34'
+                }
+            },
+
+            'maus': {
+                name: 'Maus',
+                country: 'germany',
+                icon: '🐭',
+                type: 'heavy',
+                typeName: 'Сверхтяжёлый танк',
+                year: 1944,
+                specs: {
+                    'Боевая масса': '188 т',
+                    'Экипаж': '6 человек',
+                    'Длина с пушкой': '10.20 м',
+                    'Ширина': '3.67 м',
+                    'Высота': '3.66 м',
+                    'Броня (лоб/борт/корма)': '220/200/200 мм',
+                    'Основное вооружение': '128-мм пушка KwK 44 L/55',
+                    'Доп. вооружение': '75-мм пушка KwK 44 L/36',
+                    'Пулемёты': '1×7.92-мм MG 34',
+                    'Боекомплект': '68 снарядов (128-мм), 200 снарядов (75-мм), 1000 патронов',
+                    'Двигатель': 'MB 509/1 (бензиновый) или MB 517 (дизельный)',
+                    'Мощность двигателя': '1080 л.с. (бензин) / 1200 л.с. (дизель)',
+                    'Удельная мощность': '5.7 л.с./т',
+                    'Максимальная скорость': '20 км/ч (по дороге), 13 км/ч (по бездорожью)',
+                    'Запас хода': '160 км',
+                    'Преодолеваемый подъём': '23°',
+                    'Преодолеваемая стенка': '0.78 м',
+                    'Преодолеваемый ров': '3.5 м'
+                },
+                history: `<p><strong>Panzer VIII Maus</strong> («Мышь») — самый тяжёлый танк в истории, когда-либо построенный. При массе 188 тонн это был настоящий бронированный монстр, воплощение немецкой мании величия в области вооружений. Несмотря на невероятную мощь, танк оказался совершенно непригодным для реального боевого применения.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в 1942-1944 годах по личному указанию Гитлера, который требовал создать «непробиваемый» танк. Проект разрабатывался фирмой Porsche под руководством Фердинанда Порше при участии компании Krupp (башня и вооружение).</p>
+
+                <p>Первоначально проект назывался «Mammut» («Мамонт»), затем «Mäuschen» («Мышонок»), и наконец «Maus» («Мышь»). Гитлер лично контролировал разработку, постоянно требуя усилить бронирование и вооружение, что приводило к постоянному росту массы.</p>
+
+                <h4>Конструкция</h4>
+                <p>Maus имел невероятное бронирование: лоб корпуса 220 мм, борта 200 мм, лоб башни 240 мм! При таких толщинах и рациональных углах наклона танк был практически неуязвим для любого оружия того времени.</p>
+
+                <p>Вооружение состояло из двух пушек: основной 128-мм KwK 44 L/55 (модификация зенитки FlaK 40) и вспомогательной 75-мм KwK 44 L/36, расположенной спаренно. Такое вооружение позволяло одновременно бороться с танками и пехотой.</p>
+
+                <p>Двигатель — авиационный бензиновый Daimler-Benz MB 509 (модификация DB 603) мощностью 1080 л.с., или дизель MB 517 мощностью 1200 л.с. Удельная мощность составляла всего 5.7-6.4 л.с./т, что делало танк очень медленным.</p>
+
+                <h4>Проблемы</h4>
+                <p>Maus страдал от множества проблем:
+                • Чрезмерная масса (188 тонн) — ни один мост не мог выдержать такой вес
+                • Низкая скорость (максимум 20 км/ч)
+                • Огромный расход топлива (на 100 км — около 1000 литров)
+                • Невозможность преодоления водных преград без специального оборудования
+                • Сложность производства и обслуживания
+                • Уязвимость для авиации из-за низкой подвижности</p>
+
+                <h4>Производство и судьба</h4>
+                <p>Построено всего 2 прототипа (V1 и V2) и несколько корпусов. Первый прототип (V1) испытывался в 1944 году без башни. Второй (V2) получил башню с вооружением. В апреле 1945 года оба прототипа были взорваны немцами на полигоне Куммерсдорф, чтобы не достались советским войскам.</p>
+
+                <p>Советские специалисты восстановили один танк из частей V1 и V2. Сейчас единственный сохранившийся Maus экспонируется в Бронетанковом музее в Кубинке (Московская область).</p>`,
+                battles: [
+                    'Не участвовал в боевых действиях',
+                    'Испытания на полигоне Бёблинген (1944)',
+                    'Испытания на полигоне Куммерсдорф (1944-1945)',
+                    'Захвачен советскими войсками (апрель 1945)'
+                ],
+                xray: {
+                    engine: 'Авиационный бензиновый двигатель MB 509 V-12 мощностью 1080 л.с. или дизель MB 517 мощностью 1200 л.с. Недостаточная мощность для 188 тонн',
+                    transmission: 'Электромеханическая трансмиссия: двигатель вращал генератор, который питал электромоторы, вращавшие гусеницы. Сложная и ненадёжная система',
+                    crew: 'Экипаж из 6 человек: командир, наводчик (128-мм), наводчик (75-мм), заряжающий (128-мм), заряжающий (75-мм), механик-водитель',
+                    ammunition: '68 снарядов для 128-мм пушки, 200 снарядов для 75-мм пушки. Топливные баки ёмкостью 2000 л',
+                    armament: '128-мм пушка KwK 44 L/55 и 75-мм пушка KwK 44 L/36 в одной башне. Уникальная система вооружения'
+                }
+            },
+
+            'panzer4': {
+                name: 'Pz.Kpfw. IV',
+                country: 'germany',
+                icon: '⚙️',
+                type: 'medium',
+                typeName: 'Средний танк',
+                year: 1936,
+                specs: {
+                    'Боевая масса': '25 т',
+                    'Экипаж': '5 человек',
+                    'Длина с пушкой': '7.02 м',
+                    'Ширина': '2.88 м',
+                    'Высота': '2.68 м',
+                    'Броня (лоб/борт/корма)': '80/30/30 мм',
+                    'Основное вооружение': '75-мм пушка KwK 40 L/48',
+                    'Пулемёты': '2×7.92-мм MG 34',
+                    'Боекомплект': '87 снарядов, 3150 патронов',
+                    'Двигатель': 'Maybach HL120 TRM, V-12, бензиновый',
+                    'Мощность двигателя': '300 л.с.',
+                    'Удельная мощность': '12 л.с./т',
+                    'Максимальная скорость': '42 км/ч',
+                    'Запас хода': '210 км',
+                    'Преодолеваемый подъём': '30°',
+                    'Преодолеваемая стенка': '0.60 м',
+                    'Преодолеваемый ров': '2.20 м'
+                },
+                history: `<p><strong>Panzerkampfwagen IV</strong> (Pz.IV, Sd.Kfz. 161/171) — основной средний танк Вермахта периода Второй мировой войны. Единственный немецкий танк, находившийся в производстве на протяжении всей войны (1936-1945). «Рабочая лошадка» немецких панцердивизий.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в 1934-1936 годах фирмой Krupp как «танк поддержки пехоты» (Begleitwagen). Первоначально вооружён 75-мм короткоствольной пушкой KwK 37 L/24 для стрельбы фугасными снарядами по пехоте и укреплениям.</p>
+
+                <p>Столкнувшись с Т-34 и КВ-1 в 1941 году, немцы были вынуждены усилить вооружение Pz.IV. С 1942 года танк получил длинноствольную 75-мм пушку KwK 40 L/43, а затем L/48, что сделало его эффективным противотанковым средством.</p>
+
+                <h4>Модификации</h4>
+                <p>Pz.IV имел множество модификаций (Ausf. A, B, C, D, E, F, G, H, J). Основные улучшения:
+                • Усиление бронирования (с 15 мм до 80 мм в лобовой части)
+                • Установка длинноствольной 75-мм пушки
+                • Увеличение ширины гусениц для лучшей проходимости
+                • Установка бортовых экранов (Schürzen) для защиты от ПТР</p>
+
+                <h4>Боевое применение</h4>
+                <p>Pz.IV участвовал во всех кампаниях Вермахта: Польша (1939), Франция (1940), Балканы (1941), Восточный фронт (1941-1945), Северная Африка (1941-1943), Нормандия (1944). К 1943 году стал основным танком немецкой армии, так как производство Tiger и Panther было ограниченным.</p>
+
+                <p>Надёжный, простой в обслуживании, с хорошим вооружением Pz.IV заслужил уважение как немецких танкистов, так и противника. Танк производился до самого конца войны.</p>
+
+                <h4>Производство</h4>
+                <p>Производство велось с 1936 по 1945 год фирмами Krupp, Vomag, Nibelungenwerk. Всего выпущено около 8,500 танков Pz.IV всех модификаций. На базе Pz.IV создано множество САУ: StuG IV, Jagdpanzer IV, Möbelwagen, Wirbelwind, Ostwind.</p>`,
+                battles: [
+                    'Польская кампания (сентябрь 1939)',
+                    'Французская кампания (май-июнь 1940)',
+                    'Балканская кампания (апрель 1941)',
+                    'Операция «Барбаросса» (июнь 1941)',
+                    'Битва за Москву (октябрь 1941 - январь 1942)',
+                    'Сталинградская битва (август 1942 - февраль 1943)',
+                    'Курская битва (июль 1943)',
+                    'Нормандия (июнь-август 1944)',
+                    'Арденнская операция (декабрь 1944 - январь 1945)',
+                    'Оборона Берлина (апрель-май 1945)'
+                ],
+                xray: {
+                    engine: 'Бензиновый двигатель Maybach HL120 TRM V-12 мощностью 300 л.с. Надёжный и простой в обслуживании',
+                    transmission: '6-ступенчатая коробка передач Maybach Variorex. Простая и надёжная трансмиссия',
+                    crew: 'Экипаж из 5 человек: командир, наводчик, заряжающий (в башне), механик-водитель, радист (в корпусе)',
+                    ammunition: '87 снарядов для 75-мм пушки. Топливные баки ёмкостью 470 л',
+                    armament: '75-мм пушка KwK 40 L/48 с длиной ствола 48 калибров. Хорошая пробиваемость. Два пулемёта MG 34'
+                }
+            },
+
+            'panzer2': {
+                name: 'Pz.Kpfw. II',
+                country: 'germany',
+                icon: '🔍',
+                type: 'light',
+                typeName: 'Лёгкий танк',
+                year: 1936,
+                specs: {
+                    'Боевая масса': '8.9 т', 'Экипаж': '3 человека', 'Длина': '4.81 м', 'Ширина': '2.22 м', 'Высота': '1.99 м',
+                    'Броня (лоб/борт/корма)': '30/14.5/14.5 мм', 'Основное вооружение': '20-мм пушка KwK 30 L/55', 'Пулемёты': '1×7.92-мм MG 34',
+                    'Боекомплект': '180 снарядов, 2250 патронов', 'Двигатель': 'Maybach HL62 TR, 6-цил., бензиновый', 'Мощность': '140 л.с.',
+                    'Удельная мощность': '15.7 л.с./т', 'Максимальная скорость': '40 км/ч', 'Запас хода': '200 км'
+                },
+                history: `<p><strong>Panzer II</strong> — лёгкий танк Вермахта, сыгравший ключевую роль в формировании немецких танковых войска в 1930-е годы. Изначально создавался как переходная модель до появления Pz.III и Pz.IV, но стал основой панцердивизий в Польской и Французской кампаниях.</p>
+                <h4>Конструкция</h4><p>Имел классическую компоновку: отделение управления спереди, боевое в центре, моторное сзади. 20-мм автоматическая пушка KwK 30 была эффективна против пехоты и лёгкой бронетехники, но бесполезна против средних и тяжёлых танков. Бронирование тонкое, но для разведки и поддержки пехоты в 1939-1940 гг. этого хватало.</p>
+                <h4>Боевое применение и модификации</h4><p>К 1941 году Pz.II стал слишком лёгким для фронта, поэтому его сняли с производства, но шасси активно использовалось для САУ: Wespe, Marder II, Hummel. На Восточном фронте танк быстро уступил место более мощным машинам, но оставался в разведподразделениях до конца войны.</p>`,
+                battles: ['Польская кампания (сентябрь 1939)', 'Французская кампания (май 1940)', 'Балканская кампания (апрель 1941)', 'Операция «Барбаросса» (июнь 1941)', 'Северная Африка (1941-1942)'],
+                xray: {
+                    engine: 'Бензиновый двигатель Maybach HL62 TR 6-цилиндровый мощностью 140 л.с. Компактный, но слабый',
+                    transmission: '6-ступенчатая механическая КПП ZF Aphon SG 35. Простая и надёжная',
+                    crew: 'Экипаж из 3 человек: командир-наводчик (в башне), заряжающий-радист (в корпусе), механик-водитель',
+                    ammunition: '180 снарядов для 20-мм пушки. Топливные баки ёмкостью 200 л',
+                    armament: '20-мм автоматическая пушка KwK 30 L/55. Высокая скорострельность (280 выстр/мин)'
+                }
+            },
+            'stug3': {
+                name: 'StuG III',
+                country: 'germany',
+                icon: '🛡️',
+                type: 'spg',
+                typeName: 'САУ / ПТ-САУ',
+                year: 1940,
+                specs: {
+                    'Боевая масса': '23.9 т', 'Экипаж': '4 человека', 'Длина': '6.77 м', 'Ширина': '2.95 м', 'Высота': '2.16 м',
+                    'Броня (лоб/борт/корма)': '80/30/30 мм', 'Основное вооружение': '75-мм пушка StuK 40 L/48', 'Пулемёты': '1×7.92-мм MG 34',
+                    'Боекомплект': '54 снаряда, 600 патронов', 'Двигатель': 'Maybach HL120 TRM, V-12, бензиновый', 'Мощность': '300 л.с.',
+                    'Удельная мощность': '12.5 л.с./т', 'Максимальная скорость': '40 км/ч', 'Запас хода': '155 км'
+                },
+                history: `<p><strong>Sturmgeschütz III (StuG III)</strong> — самая массовая немецкая бронированная машина Второй мировой (выпущено ~10,500 шт.). Изначально создавалась как штурмовое орудие для поддержки пехоты, но стала одной из самых эффективных ПТ-САУ Вермахта.</p>
+                <h4>История создания</h4><p>Разработана в 1936 году по идее Эриха фон Манштейна, который предлагал создать мобильное артиллерийское средство для сопровождения пехоты. База — шасси Pz.III. Низкий силуэт, отсутствующая башня и мощная пушка сделали её идеальной для обороны и засад.</p>
+                <h4>Боевое применение</h4><p>Изначально StuG III использовалась для разрушения укреплений фугасными снарядами. С 1942 года получила длинноствольную 75-мм пушку StuK 40 и стала главным средством борьбы с советскими танками. Благодаря низкой высоте, её было трудно обнаружить и поразить. Участвовала во всех кампаниях до 1945 года.</p>`,
+                battles: ['Французская кампания (1940)', 'Операция «Барбаросса» (1941)', 'Курская битва (июль 1943)', 'Нормандия (1944)', 'Арденны (1944-1945)', 'Оборона Берлина (1945)'],
+                xray: {
+                    engine: 'Бензиновый двигатель Maybach HL120 TRM V-12 мощностью 300 л.с. Стандартный для среднего класса',
+                    transmission: '6-ступенчатая КПП Maybach Variorex. Надёжная, простая в ремонте',
+                    crew: 'Экипаж из 4 человек: командир, наводчик, заряжающий (в рубке), механик-водитель (в корпусе)',
+                    ammunition: '54 снаряда для 75-мм пушки. Топливные баки ёмкостью 320 л',
+                    armament: '75-мм пушка StuK 40 L/48. Отличная баллистика. Нет башни, ограниченные углы наведения'
+                }
+            },
+
+            // === ФРАНЦИЯ ===
+            'b1bis': {
+                name: 'Char B1 bis',
+                country: 'france',
+                icon: '🏰',
+                type: 'heavy',
+                typeName: 'Тяжёлый танк',
+                year: 1937,
+                specs: {
+                    'Боевая масса': '31.5 т',
+                    'Экипаж': '4 человека',
+                    'Длина с пушкой': '6.37 м',
+                    'Ширина': '2.46 м',
+                    'Высота': '2.79 м',
+                    'Броня (лоб/борт/корма)': '60/55/55 мм',
+                    'Основное вооружение': '75-мм пушка SA 35 (в корпусе), 47-мм пушка SA 35 (в башне)',
+                    'Пулемёты': '2×7.5-мм Reibel',
+                    'Боекомплект': '74 снаряда (75-мм), 50 снарядов (47-мм), 5100 патронов',
+                    'Двигатель': 'Renault, 6-цилиндровый, бензиновый',
+                    'Мощность двигателя': '307 л.с.',
+                    'Удельная мощность': '9.7 л.с./т',
+                    'Максимальная скорость': '28 км/ч',
+                    'Запас хода': '180 км',
+                    'Преодолеваемый подъём': '27°',
+                    'Преодолеваемая стенка': '0.93 м',
+                    'Преодолеваемый ров': '2.7 м'
+                },
+                history: `<p><strong>Char B1 bis</strong> — один из самых защищённых танков начала Второй мировой войны. Его броня в 60 мм была непробиваема для большинства немецких орудий 1940 года. Танк нёс два орудия: 75-мм гаубицу в корпусе и 47-мм пушку в башне, что делало его универсальным средством борьбы как с пехотой, так и с танками.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в 1920-х — 1930-х годах как «танк прорыва» (Char de Bataille) для поддержки пехоты при атаке укреплённых позиций. Концепция предполагала медленный, хорошо бронированный танк с мощным вооружением.</p>
+
+                <p>Char B1 (первая версия) появился в 1935 году, а улучшенная версия B1 bis — в 1937 году. Основные улучшения: усиленное бронирование (с 55 до 60 мм), новая башня APX-1 с 47-мм пушкой, более мощный двигатель.</p>
+
+                <h4>Конструкция</h4>
+                <p>Уникальная особенность B1 bis — два орудия. 75-мм гаубица SA 35 установлена в лобовом листе корпуса и наводилась поворотом всего танка (механик-водитель). 47-мм пушка SA 35 в башне предназначалась для борьбы с танками.</p>
+
+                <p>Бронирование достигало 60 мм, что делало танк практически неуязвимым для немецких 37-мм и 50-мм пушек 1940 года. Только 88-мм зенитки и 105-мм гаубицы могли пробить броню B1 bis.</p>
+
+                <h4>Боевое применение</h4>
+                <p>В мае 1940 года Франция имела около 400 танков B1 bis. Несмотря на численное превосходство немецких танков, B1 bis показали высокую эффективность. В бою у Стонна (15 мая 1940) один B1 bis под командованием капитана Пьера Бийотта уничтожил 13 немецких танков и 2 противотанковые пушки, получив 140 попаданий без пробития.</p>
+
+                <p>Однако низкая скорость (28 км/ч), малый запас хода (180 км), сложность управления (командир одновременно был наводчиком башенного орудия) и устаревшая тактика применения не позволили B1 bis переломить ход войны.</p>
+
+                <h4>Производство</h4>
+                <p>Производство велось с 1937 по июнь 1940 года. Всего выпущено 377 танков B1 bis. После капитуляции Франции около 150 танков захвачены немцами и использовались под обозначением Panzerkampfwagen B2 740(f). Некоторые участвовали в боях в Нормандии в 1944 году.</p>`,
+                battles: [
+                    'Французская кампания (май-июнь 1940)',
+                    'Битва при Анню (15 мая 1940)',
+                    'Битва при Стонне (15-17 мая 1940)',
+                    'Битва за Дюнкерк (май-июнь 1940)',
+                    'Оборона линии Мажино (июнь 1940)'
+                ],
+                xray: {
+                    engine: 'Бензиновый двигатель Renault 6-цилиндровый мощностью 307 л.с. Недостаточная мощность для 31.5 тонн',
+                    transmission: 'Механическая трансмиссия с 5-ступенчатой коробкой передач. Сложное управление',
+                    crew: 'Экипаж из 4 человек: командир (в башне, одновременно наводчик 47-мм), наводчик-заряжающий 75-мм, механик-водитель (наводит 75-мм пушку)',
+                    ammunition: '74 снаряда для 75-мм гаубицы, 50 снарядов для 47-мм пушки. Топливные баки ёмкостью 400 л',
+                    armament: '75-мм гаубица SA 35 в корпусе (наводится поворотом танка), 47-мм пушка SA 35 в башне. Два пулемёта Reibel'
+                }
+            },
+
+            'ar44': {
+                name: 'ARL 44',
+                country: 'france',
+                icon: '🗼',
+                type: 'heavy',
+                typeName: 'Тяжёлый танк',
+                year: 1946,
+                specs: {
+                    'Боевая масса': '48 т',
+                    'Экипаж': '5 человек',
+                    'Длина с пушкой': '8.76 м',
+                    'Ширина': '3.42 м',
+                    'Высота': '3.15 м',
+                    'Броня (лоб/борт/корма)': '120/60/60 мм',
+                    'Основное вооружение': '90-мм пушка DCA 45',
+                    'Пулемёты': '1×7.5-мм Reibel, 1×12.7-мм AA',
+                    'Боекомплект': '52 снаряда, 2000 патронов (7.5-мм), 600 патронов (12.7-мм)',
+                    'Двигатель': 'Maybach HL230, V-12, бензиновый',
+                    'Мощность двигателя': '575 л.с.',
+                    'Удельная мощность': '12 л.с./т',
+                    'Максимальная скорость': '37 км/ч',
+                    'Запас хода': '200 км',
+                    'Преодолеваемый подъём': '30°',
+                    'Преодолеваемая стенка': '1.10 м',
+                    'Преодолеваемый ров': '3.0 м'
+                },
+                history: `<p><strong>ARL 44</strong> — первый послевоенный французский тяжёлый танк, ставший символом возрождения французской танковой промышленности. Разрабатывался ещё во время войны в подполье, но выпущен был лишь в 1946 году. Несмотря на устаревшую конструкцию, танк сыграл важную роль в восстановлении французского танкостроения.</p>
+
+                <h4>История создания</h4>
+                <p>Разработка началась в 1940 году после поражения Франции. Инженеры компаний ARL (Ateliers de Rueil) и Schneider продолжали работу в тайне от немцев. Цель — создать современный тяжёлый танк, способный противостоять немецким Tiger и Panther.</p>
+
+                <p>После освобождения Франции в 1944 году работы ускорились. Первый прототип изготовлен в 1946 году. Танк сочетал шасси, разработанное ещё до войны, с новой башней и мощной 90-мм пушкой.</p>
+
+                <h4>Конструкция</h4>
+                <p>ARL 44 использовал ходовую часть от Char B1 bis с существенными доработками: 6 опорных катков на борт, новая подвеска. Корпус сварной с наклонной бронёй (лоб 120 мм). Башня литая с 90-мм пушкой DCA 45 (модификация зенитки).</p>
+
+                <p>Двигатель — немецкий Maybach HL230 (трофейный), что было временным решением. Планировалась установка французского двигателя, но это так и не было реализовано.</p>
+
+                <h4>Служба</h4>
+                <p>ARL 44 не участвовал в боевых действиях. Всего выпущено 60 танков (1946-1950). Они использовались как учебные машины и для отработки новых технологий. Танк быстро устарел и был снят с вооружения в 1950-х годах.</p>
+
+                <p>Несмотря на недостатки, ARL 44 сыграл важную роль: позволил сохранить кадры, отработать новые технологии, заложил основу для создания послевоенных французских танков AMX-13 и AMX-30.</p>`,
+                battles: [
+                    'Не участвовал в боевых действиях',
+                    'Использовался как учебный танк (1946-1953)',
+                    'Символ возрождения французского танкостроения',
+                    'Снят с вооружения в 1953 году'
+                ],
+                xray: {
+                    engine: 'Бензиновый двигатель Maybach HL230 V-12 мощностью 575 л.с. (трофейный немецкий). Временное решение',
+                    transmission: 'Механическая трансмиссия с 5-ступенчатой коробкой передач. Устаревшая конструкция',
+                    crew: 'Экипаж из 5 человек: командир, наводчик, заряжающий (в башне), механик-водитель, радист (в корпусе)',
+                    ammunition: '52 снаряда для 90-мм пушки. Топливные баки ёмкостью 900 л',
+                    armament: '90-мм пушка DCA 45 с длиной ствола 50 калибров. Хорошая пробиваемость. Пулемёты Reibel и Browning'
+                }
+            },
+
+            'r35': {
+                name: 'Renault R35',
+                country: 'france',
+                icon: '🐢',
+                type: 'light',
+                typeName: 'Лёгкий пехотный танк',
+                year: 1936,
+                specs: {
+                    'Боевая масса': '10.3 т', 'Экипаж': '2 человека', 'Длина': '4.02 м', 'Ширина': '1.87 м', 'Высота': '2.12 м',
+                    'Броня (лоб/борт/корма)': '43/43/34 мм', 'Основное вооружение': '37-мм пушка SA 18', 'Пулемёты': '1×7.5-мм Reibel',
+                    'Боекомплект': '103 снаряда, 2400 патронов', 'Двигатель': 'Renault, 4-цил., бензиновый', 'Мощность': '82 л.с.',
+                    'Удельная мощность': '8 л.с./т', 'Максимальная скорость': '20 км/ч', 'Запас хода': '130 км'
+                },
+                history: `<p><strong>Renault R35</strong> — самый массовый французский танк 1930-х годов (выпущено ~1,500 шт.). Создан как танк непосредственной поддержки пехоты, делал ставку на бронезащиту, а не на скорость или огневую мощь.</p>
+                <h4>Конструкция</h4><p>Литой корпус с толщиной брони до 43 мм был практически непробиваем для немецких 37-мм ПТО 1940 года. Однако двухместная башня, отсутствие радиостанции, слабая 37-мм короткоствольная пушка и низкая скорость (20 км/ч) серьёзно ограничивали боевые возможности.</p>
+                <h4>Боевое применение</h4><p>В мае 1940 года R35 составляли основу французских лёгких танковых батальонов. Несмотря на хорошую броню, плохая тактика применения и отсутствие радиосвязи привели к массовым потерям. Около 800 машин захвачены немцами и использованы как учебные, ПТ-САУ (с 75-мм пушкой) или для обороны побережья.</p>`,
+                battles: ['Французская кампания (май-июнь 1940)', 'Оборона линии Мажино', 'Битва при Дюнкерке', 'Использование Вермахтом (1940-1944)', 'Освобождение Франции (1944)'],
+                xray: {
+                    engine: 'Бензиновый 4-цилиндровый двигатель Renault мощностью 82 л.с. Слабый для 10 тонн',
+                    transmission: 'Механическая 4-ступенчатая КПП. Примитивная, но простая',
+                    crew: 'Экипаж из 2 человек: командир (в башне, одновременно наводчик и заряжающий), механик-водитель',
+                    ammunition: '103 снаряда для 37-мм пушки. Топливные баки ёмкостью 180 л',
+                    armament: '37-мм пушка SA 18 L/21. Низкая начальная скорость, эффективна только против пехоты'
+                }
+            },
+            's35': {
+                name: 'Somua S35',
+                country: 'france',
+                icon: '🎖️',
+                type: 'medium',
+                typeName: 'Средний кавалерийский танк',
+                year: 1936,
+                specs: {
+                    'Боевая масса': '19.5 т', 'Экипаж': '3 человека', 'Длина': '5.38 м', 'Ширина': '2.12 м', 'Высота': '2.62 м',
+                    'Броня (лоб/борт/корма)': '47/47/40 мм', 'Основное вооружение': '47-мм пушка SA 35', 'Пулемёты': '1×7.5-мм Reibel',
+                    'Боекомплект': '118 снарядов, 1500 патронов', 'Двигатель': 'Somua, 4-цил., бензиновый', 'Мощность': '190 л.с.',
+                    'Удельная мощность': '9.7 л.с./т', 'Максимальная скорость': '40 км/ч', 'Запас хода': '230 км'
+                },
+                history: `<p><strong>Somua S35</strong> — один из лучших средних танков 1930-х годов. Разработан для французской кавалерии как быстрая и хорошо защищённая машина. По совокупности характеристик превосходил большинство немецких танков 1940 года.</p>
+                <h4>Конструкция</h4><p>Корпус состоял из трёх литых секций, сваренных между собой. Броня до 47 мм с рациональными углами наклона. 47-мм пушка SA 35 имела отличную баллистику и могла пробить броню любого немецкого танка 1940 года. Недостатки: одноместная башня, отсутствие командирской башенки, сложное управление.</p>
+                <h4>Боевое применение</h4><p>S35 показал высокую эффективность в боях 1940 года. В бою у Стонна несколько S35 прорывали немецкие позиции, неся минимальные потери. Однако устаревшая французская доктрина и рассредоточение танков по пехотным дивизиям не позволили реализовать их потенциал. После капитуляции Франции захваченные машины использовались немцами и поставлялись союзникам.</p>`,
+                battles: ['Французская кампания (май-июнь 1940)', 'Битва при Жамблу (май 1940)', 'Битва при Анню (май 1940)', 'Северная Африка (1942-1943)', 'Использование Вермахтом и Италией'],
+                xray: {
+                    engine: 'Бензиновый двигатель Somua 4-цилиндровый мощностью 190 л.с. Надёжный, но требователен к топливу',
+                    transmission: 'Механическая 5-ступенчатая КПП. Сложное переключение требовало навыков',
+                    crew: 'Экипаж из 3 человек: командир (в башне), наводчик-заряжающий (в корпусе справа), механик-водитель',
+                    ammunition: '118 снарядов для 47-мм пушки. Топливные баки ёмкостью 300 л',
+                    armament: '47-мм пушка SA 35 L/32. Отличная бронепробиваемость для 1936 года. Нет радиостанции'
+                }
+            },
+
+            // === США ===
+            'm4sherman': {
+                name: 'M4 Sherman',
+                country: 'usa',
+                icon: '🦅',
+                type: 'medium',
+                typeName: 'Средний танк',
+                year: 1942,
+                specs: {
+                    'Боевая масса': '30.3 т',
+                    'Экипаж': '5 человек',
+                    'Длина с пушкой': '6.32 м',
+                    'Ширина': '2.62 м',
+                    'Высота': '2.74 м',
+                    'Броня (лоб/борт/корма)': '63/38/38 мм',
+                    'Основное вооружение': '75-мм пушка M3 / 76-мм пушка M1',
+                    'Пулемёты': '1×12.7-мм M2HB, 2×7.62-мм M1919A4',
+                    'Боекомплект': '90-104 снаряда, 6250 патронов',
+                    'Двигатель': 'Continental R975, радиальный, бензиновый',
+                    'Мощность двигателя': '400 л.с.',
+                    'Удельная мощность': '13.2 л.с./т',
+                    'Максимальная скорость': '48 км/ч',
+                    'Запас хода': '190 км',
+                    'Преодолеваемый подъём': '32°',
+                    'Преодолеваемая стенка': '0.61 м',
+                    'Преодолеваемый ров': '2.29 м'
+                },
+                history: `<p><strong>M4 Sherman</strong> — самый массовый американский танк Второй мировой войны и один из самых массовых танков в истории. Выпущено около 50,000 экземпляров в десятках модификаций. Хотя Sherman уступал немецким тяжёлым танкам в бронезащите и огневой мощи, он превосходил их в надёжности, ремонтопригодности и массовости производства.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в 1940-1941 годах на основе среднего танка M3 Lee/Grant. Требования: надёжность, простота производства, хорошая подвижность. Первый прототип изготовлен в сентябре 1941 года, серийное производство началось в феврале 1942 года.</p>
+
+                <p>Название «Sherman» танк получил от британцев (в честь генерала Гражданской войны в США Уильяма Шермана). Американское обозначение — Medium Tank M4.</p>
+
+                <h4>Конструкция</h4>
+                <p>Классическая компоновка: двигатель в корме, трансмиссия в носу, башня по центру. Сварной или литой корпус. Вертикальная подвеска HVSS (Horizontal Volute Spring Suspension) или горизонтальная HVSS.</p>
+
+                <p>Первоначально вооружён 75-мм пушкой M3 (хороша для поддержки пехоты, слаба против танков). С 1944 года появилась модификация с 76-мм пушкой M1 (лучшая противотанковая способность). Также существовали варианты с 105-мм гаубицей.</p>
+
+                <h4>Модификации</h4>
+                <p>M4 имел множество модификаций:
+                • M4, M4A1, M4A2, M4A3, M4A4 — разные двигатели и способы производства корпуса
+                • M4A3E8 «Easy Eight» — улучшенная подвеска HVSS, 76-мм пушка
+                • Sherman Firefly (британский) — 17-фунтовая пушка (76.2 мм)
+                • Sherman Crab — тральщик
+                • Sherman DD — плавающий танк</p>
+
+                <h4>Боевое применение</h4>
+                <p>Боевое крещение — в Северной Африке (операция «Torch», ноябрь 1942). Sherman участвовал во всех кампаниях союзников: Северная Африка, Италия, Нормандия, освобождение Франции, Германия, Тихий океан.</p>
+
+                <p>Широко поставлялся по ленд-лизу: Великобритания (17,000), СССР (4,000), Франция, Китай и другие страны. В Красной Армии Sherman получил прозвище «Эмча» (от M4).</p>
+
+                <h4>Производство</h4>
+                <p>Производство велось с 1942 по 1946 год фирмами Ford, Chrysler, Fisher Body, Pressed Steel Car Company и другими. Всего выпущено около 50,000 танков. Sherman стал символом американской промышленной мощи.</p>`,
+                battles: [
+                    'Северо-Африканская кампания (1942-1943)',
+                    'Сицилия и Италия (1943-1945)',
+                    'Высадка в Нормандии (6 июня 1944)',
+                    'Операция «Market Garden» (сентябрь 1944)',
+                    'Арденнская операция (декабрь 1944 - январь 1945)',
+                    'Операция «Багратион» (1944, в составе РККА)',
+                    'Форсирование Рейна (март 1945)',
+                    'Окинава (апрель-июнь 1945)',
+                    'Корейская война (1950-1953)'
+                ],
+                xray: {
+                    engine: 'Бензиновый радиальный двигатель Continental R975 (9-цилиндровый) мощностью 400 л.с. или дизель GM 6046. Надёжные двигатели',
+                    transmission: 'Механическая трансмиссия с 5-ступенчатой коробкой передач. Простая и надёжная',
+                    crew: 'Экипаж из 5 человек: командир, наводчик, заряжающий (в башне), механик-водитель, радист-пулемётчик (в корпусе)',
+                    ammunition: '90-104 снаряда в зависимости от модификации. Топливные баки ёмкостью 662 л',
+                    armament: '75-мм пушка M3 или 76-мм пушка M1. Спаренный пулемёт M1919A4. Курсовой пулемёт. Зенитный M2HB'
+                }
+            },
+
+            'm26': {
+                name: 'M26 Pershing',
+                country: 'usa',
+                icon: '⚡',
+                type: 'heavy',
+                typeName: 'Тяжёлый танк',
+                year: 1944,
+                specs: {
+                    'Боевая масса': '41.7 т',
+                    'Экипаж': '5 человек',
+                    'Длина с пушкой': '8.65 м',
+                    'Ширина': '3.51 м',
+                    'Высота': '2.77 м',
+                    'Броня (лоб/борт/корма)': '102/76/51 мм',
+                    'Основное вооружение': '90-мм пушка M3',
+                    'Пулемёты': '1×12.7-мм M2HB, 2×7.62-мм M1919A4',
+                    'Боекомплект': '70 снарядов, 5500 патронов',
+                    'Двигатель': 'Ford GAF, V-8, бензиновый',
+                    'Мощность двигателя': '500 л.с.',
+                    'Удельная мощность': '12 л.с./т',
+                    'Максимальная скорость': '48 км/ч',
+                    'Запас хода': '160 км',
+                    'Преодолеваемый подъём': '31°',
+                    'Преодолеваемая стенка': '0.91 м',
+                    'Преодолеваемый ров': '2.44 м'
+                },
+                history: `<p><strong>M26 Pershing</strong> — один из лучших американских танков Второй мировой войны, названный в честь генерала Первой мировой войны Джона Дж. Першинга. Создан как ответ на немецкие тяжёлые танки Tiger и Panther, нёс мощную 90-мм пушку, способную бороться с любой немецкой бронетехникой.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в 1942-1944 годах как развитие среднего танка M4 Sherman. Программа T20/T23/T25/T26 велась несколько лет. Опыты боев в Европе показали необходимость более мощного танка. 90-мм пушка M3 (модификация зенитки M1) стала основным вооружением.</p>
+
+                <p>Первоначально классифицировался как тяжёлый танк, позже переквалифицирован в средний. Производство началось в ноябре 1944 года.</p>
+
+                <h4>Конструкция</h4>
+                <p>Pershing получил торсионную подвеску (вместо вертикальной у Sherman), что улучшило плавность хода. Корпус сварной с рациональными углами наклона брони. Лобовая броня достигала 102 мм.</p>
+
+                <p>90-мм пушка M3 с длиной ствола 53 калибра могла пробить 120 мм брони на дистанции 1000 метров. Это позволяло эффективно бороться с Panther и Tiger. Скорострельность — 8 выстрелов в минуту.</p>
+
+                <h4>Боевое применение</h4>
+                <p>Первые M26 прибыли в Европу в январе 1945 года. 26 февраля 1945 года один Pershing подбил немецкий Tiger I в районе Эльсдорфа. Всего к концу войны в Европу доставлено 310 танков, из них 200 успели принять участие в боях.</p>
+
+                <p>Pershing зарекомендовал себя как отличный боевой танк: хорошая бронезащита, мощное вооружение, надёжность. После войны стал основой американского танкового парка до появления M46 Patton.</p>
+
+                <h4>Производство</h4>
+                <p>Производство велось с ноября 1944 по 1946 год. Всего выпущено 2,428 танков M26. В 1946 году танк переквалифицирован в средний. Участвовал в Корейской войне (1950-1953), где показал хорошие результаты против северокорейских Т-34-85.</p>`,
+                battles: [
+                    'Рейнская операция (февраль-март 1945)',
+                    'Переправа через Рейн (март 1945)',
+                    'Битва за Кёльн (март 1945)',
+                    'Бавария (апрель-май 1945)',
+                    'Корейская война (1950-1953)',
+                    'Оборона Пусанского периметра (август-сентябрь 1950)',
+                    'Наступление на Сеул (сентябрь 1950)'
+                ],
+                xray: {
+                    engine: 'Бензиновый двигатель Ford GAF V-8 мощностью 500 л.с. Компактный и надёжный',
+                    transmission: 'Механическая трансмиссия с 5-ступенчатой коробкой передач. Торсионная подвеска',
+                    crew: 'Экипаж из 5 человек: командир, наводчик, заряжающий (в башне), механик-водитель, радист (в корпусе)',
+                    ammunition: '70 снарядов для 90-мм пушки. Топливные баки ёмкостью 776 л',
+                    armament: '90-мм пушка M3 с длиной ствола 53 калибра. Отличная пробиваемость. Три пулемёта (спаренный, курсовой, зенитный)'
+                }
+            },
+
+            'm10': {
+                name: 'M10 Wolverine',
+                country: 'usa',
+                icon: '🔱',
+                type: 'spg',
+                typeName: 'ПТ-САУ',
+                year: 1942,
+                specs: {
+                    'Боевая масса': '29.8 т',
+                    'Экипаж': '5 человек',
+                    'Длина с пушкой': '6.83 м',
+                    'Ширина': '3.05 м',
+                    'Высота': '2.77 м',
+                    'Броня (лоб/борт/корма)': '57/25/19 мм',
+                    'Основное вооружение': '76-мм пушка M7',
+                    'Пулемёты': '1×12.7-мм M2HB',
+                    'Боекомплект': '54 снаряда, 300 патронов',
+                    'Двигатель': 'Twin GM Diesel 6-71, дизельный',
+                    'Мощность двигателя': '410 л.с.',
+                    'Удельная мощность': '13.8 л.с./т',
+                    'Максимальная скорость': '51 км/ч',
+                    'Запас хода': '300 км',
+                    'Преодолеваемый подъём': '30°',
+                    'Преодолеваемая стенка': '0.61 м',
+                    'Преодолеваемый ров': '2.44 м'
+                },
+                history: `<p><strong>M10 Wolverine</strong> (официальное обозначение 3-inch Gun Motor Carriage M10) — американская противотанковая самоходная установка на базе шасси M4 Sherman. Открытая сверху башня и мощная 76-мм пушка делали её эффективным средством борьбы с немецкими танками. Широко поставлялась по ленд-лизу, в том числе в СССР.</p>
+
+                <h4>История создания</h4>
+                <p>Разработана в 1941-1942 годах как ответ на необходимость создания мобильной противотанковой САУ. База — шасси M4A2 Sherman с дизельным двигателем. 76-мм пушка M7 (модификация зенитки M1918) обеспечивала отличную пробиваемость.</p>
+
+                <p>Открытая башня (без крыши) уменьшала массу и давала хороший обзор, но делала экипаж уязвимым для осколков и пехоты. Бронирование было слабым (максимум 57 мм), так как САУ не предназначалась для лобовых столкновений.</p>
+
+                <h4>Конструкция</h4>
+                <p>Ходовая часть от M4A2: 5 опорных катков на борт с вертикальной подвеской. Открытая пятиугольная башня с 76-мм пушкой. Двигатель — спаренный дизель GM 6-71 (два 6-цилиндровых двигателя).</p>
+
+                <p>76-мм пушка M7 с длиной ствола 52 калибра могла пробить 100 мм брони на дистанции 1000 метров. Это позволяло бороться с Pz.IV и Panther. Скорострельность — 15 выстрелов в минуту.</p>
+
+                <h4>Боевое применение</h4>
+                <p>Боевое крещение — в Северной Африке (1943). M10 активно использовалась на всех театрах военных действий. В Нормандии (июнь 1944) M10 стали основным средством борьбы с немецкими танками.</p>
+
+                <p>По ленд-лизу поставлено: Великобритании (1600), СССР (52), Франции. В Красной Армии M10 получила прозвище «У Wolverine» (от английского названия). Советские танкисты высоко оценили машину за мощное вооружение и хорошую подвижность.</p>
+
+                <h4>Производство</h4>
+                <p>Производство велось с сентября 1942 по декабрь 1943 года. Всего выпущено 6,706 САУ M10. В 1944 году заменена более мощной M36 Jackson с 90-мм пушкой.</p>`,
+                battles: [
+                    'Северо-Африканская кампания (1943)',
+                    'Сицилия (июль-август 1943)',
+                    'Итальянская кампания (1943-1945)',
+                    'Высадка в Нормандии (июнь 1944)',
+                    'Операция «Багратион» (июнь-август 1944, в РККА)',
+                    'Операция «Market Garden» (сентябрь 1944)',
+                    'Арденнская операция (декабрь 1944 - январь 1945)',
+                    'Форсирование Рейна (март 1945)'
+                ],
+                xray: {
+                    engine: 'Дизельный двигатель Twin GM 6-71 (два 6-цилиндровых) мощностью 410 л.с. Надёжный дизель',
+                    transmission: 'Механическая трансмиссия с 5-ступенчатой коробкой передач. Простая и надёжная',
+                    crew: 'Экипаж из 5 человек: командир, наводчик, 2 заряжающих (в открытой башне), механик-водитель',
+                    ammunition: '54 снаряда для 76-мм пушки. Топливные баки ёмкостью 567 л',
+                    armament: '76-мм пушка M7 с длиной ствола 52 калибра. Зенитный пулемёт M2HB на башне. Нет курсового пулемёта'
+                }
+            },
+
+            'm46': {
+                name: 'M46 Patton',
+                country: 'usa',
+                icon: '🎖',
+                type: 'medium',
+                typeName: 'Средний танк',
+                year: 1949,
+                specs: {
+                    'Боевая масса': '44.2 т',
+                    'Экипаж': '5 человек',
+                    'Длина с пушкой': '8.51 м',
+                    'Ширина': '3.51 м',
+                    'Высота': '3.05 м',
+                    'Броня (лоб/борт/корма)': '102/76/51 мм',
+                    'Основное вооружение': '90-мм пушка M3A1',
+                    'Пулемёты': '1×12.7-мм M2HB, 2×7.62-мм M1919A4',
+                    'Боекомплект': '70 снарядов, 5500 патронов',
+                    'Двигатель': 'Continental AV-1790, V-12, бензиновый',
+                    'Мощность двигателя': '810 л.с.',
+                    'Удельная мощность': '18.3 л.с./т',
+                    'Максимальная скорость': '48 км/ч',
+                    'Запас хода': '130 км',
+                    'Преодолеваемый подъём': '31°',
+                    'Преодолеваемая стенка': '0.91 м',
+                    'Преодолеваемый ров': '2.44 м'
+                },
+                history: `<p><strong>M46 Patton</strong> — американский средний танк послевоенного периода, названный в честь генерала Джорджа С. Паттона. Фактически представлял собой глубокую модернизацию M26 Pershing с новым двигателем и трансмиссией. Первый танк, получивший имя в честь американского военачальника.</p>
+
+                <h4>История создания</h4>
+                <p>Разработан в 1948-1949 годах как ответ на появление советских Т-54 и необходимость модернизации M26. Основной недостаток Pershing — слабая удельная мощность (12 л.с./т). Новый двигатель Continental AV-1790 мощностью 810 л.с. решил эту проблему.</p>
+
+                <p>Также установлена новая трансмиссия Allison CD-850 с гидротрансформатором, что значительно улучшило управляемость. Танк получил индекс M46 и имя «Patton».</p>
+
+                <h4>Конструкция</h4>
+                <p>Корпус и башня практически идентичны M26, но с улучшенной эргономикой. 90-мм пушка M3A1 с эжектором для удаления пороховых газов. Торсионная подвеска с гидравлическими амортизаторами.</p>
+
+                <p>Двигатель Continental AV-1790 V-12 с воздушным охлаждением (позже заменён на жидкостное). Удельная мощность возросла до 18.3 л.с./т — отличный показатель для того времени.</p>
+
+                <h4>Служба</h4>
+                <p>M46 поступил на вооружение в 1949 году. Основной танк американской армии в начале 1950-х годов. Активно участвовал в Корейской войне (1950-1953), где показал превосходство над северокорейскими Т-34-85.</p>
+
+                <p>В 1950-х годах M46 составлял основу танковых дивизий США в Европе (против советской угрозы). Снят с вооружения в конце 1950-х, заменён на M47 Patton II.</p>
+
+                <h4>Производство</h4>
+                <p>Производство велось с 1949 по 1951 год. Всего выпущено 1,160 танков M46. Многие M26 переоборудованы в M46. Танк также поставлялся союзникам по НАТО.</p>`,
+                battles: [
+                    'Корейская война (1950-1953)',
+                    'Оборона Пусанского периметра (август-сентябрь 1950)',
+                    'Наступление на Сеул (сентябрь 1950)',
+                    'Наступление на Ялу (октябрь-ноябрь 1950)',
+                    'Китайское наступление (ноябрь 1950 - январь 1951)',
+                    'Позиционные бои (1951-1953)'
+                ],
+                xray: {
+                    engine: 'Бензиновый двигатель Continental AV-1790 V-12 мощностью 810 л.с. с воздушным охлаждением. Отличная удельная мощность',
+                    transmission: 'Трансмиссия Allison CD-850 с гидротрансформатором. Значительно улучшила управляемость',
+                    crew: 'Экипаж из 5 человек: командир, наводчик, заряжающий (в башне), механик-водитель, радист (в корпусе)',
+                    ammunition: '70 снарядов для 90-мм пушки. Топливные баки ёмкостью 946 л',
+                    armament: '90-мм пушка M3A1 с эжектором. Спаренный пулемёт M1919A4. Курсовой пулемёт. Зенитный M2HB'
+                }
+            },
+
+            'm3stuart': {
+                name: 'M3 Stuart',
+                country: 'usa',
+                icon: '🦁',
+                type: 'light',
+                typeName: 'Лёгкий танк',
+                year: 1941,
+                specs: {
+                    'Боевая масса': '12.7 т', 'Экипаж': '4 человека', 'Длина': '4.53 м', 'Ширина': '2.24 м', 'Высота': '2.30 м',
+                    'Броня (лоб/борт/корма)': '44/25/25 мм', 'Основное вооружение': '37-мм пушка M6', 'Пулемёты': '4×7.62-мм Browning M1919',
+                    'Боекомплект': '103 снаряда, 7500 патронов', 'Двигатель': 'Continental W-670, 7-цил., авиационный', 'Мощность': '250 л.с.',
+                    'Удельная мощность': '19.7 л.с./т', 'Максимальная скорость': '58 км/ч', 'Запас хода': '240 км'
+                },
+                history: `<p><strong>M3 Stuart</strong> (Light Tank M3) — основной лёгкий танк США начала Второй мировой войны. Назван британцами в честь генерала Гражданской войны Джебю Стюарта. Отличался высокой надёжностью, скоростью и отличной проходимостью.</p>
+                <h4>Конструкция</h4><p>Авиационный радиальный двигатель Continental W-670 обеспечивал отличную удельную мощность. 37-мм пушка M6 была эффективна против японских танков и пехоты, но слаба против немецкой брони. Бронирование тонкое, но достаточное для разведки. Шасси стало базой для множества САУ (M5/M8 HMC, M3 GMC).</p>
+                <h4>Боевое применение</h4><p>Широко использовался в Северной Африке, Тихоокеанском театре и поставлялся по ленд-лизу в СССР, Великобританию и Китай. В Красной Армии получил прозвище «Стюарт» или «Эмка». Британцы использовали его в основном для разведки. В Тихом океане успешно противостоял японским Type 95 и Type 97.</p>`,
+                battles: ['Филиппины (1941-1942)', 'Северная Африка (1942-1943)', 'Сицилия и Италия (1943)', 'Тихоокеанский театр (1942-1945)', 'Операция «Багратион» (в РККА, 1944)'],
+                xray: {
+                    engine: 'Авиационный радиальный двигатель Continental W-670 7-цилиндровый мощностью 250 л.с. Очень надёжный',
+                    transmission: 'Механическая 4-ступенчатая КПП. Простая, с сервоприводами',
+                    crew: 'Экипаж из 4 человек: командир, наводчик-заряжающий (в башне), механик-водитель, радист-пулемётчик',
+                    ammunition: '103 снаряда для 37-мм пушки. Топливные баки ёмкостью 253 л',
+                    armament: '37-мм пушка M6 L/56.5. Высокая точность. 4 пулемёта для подавления пехоты'
+                }
+            },
+
+            'm7priest': {
+                name: 'M7 Priest',
+                country: 'usa',
+                icon: '⛪',
+                type: 'spg',
+                typeName: 'САУ (Самоходная гаубица)',
+                year: 1942,
+                specs: {
+                    'Боевая масса': '23 т', 'Экипаж': '7 человек', 'Длина': '6.00 м', 'Ширина': '2.67 м', 'Высота': '2.80 м',
+                    'Броня (лоб/борт/корма)': '51/38/19 мм', 'Основное вооружение': '105-мм гаубица M2/M2A1', 'Пулемёты': '1×12.7-мм M2HB',
+                    'Боекомплект': '69 снарядов, 300 патронов', 'Двигатель': 'Continental R975 C1, 9-цил., бензиновый', 'Мощность': '340 л.с.',
+                    'Удельная мощность': '14.8 л.с./т', 'Максимальная скорость': '40 км/ч', 'Запас хода': '190 км'
+                },
+                history: `<p><strong>M7 Priest</strong> (105 mm Howitzer Motor Carriage M7) — первая массовая американская самоходная артиллерийская установка. Названа британцами «Priest» («Священник») из-за характерного зенитного пулемётного гнезда, напоминающего церковную кафедру.</p>
+                <h4>История создания</h4><p>Создана в 1941 году на базе шасси M3 Lee. 105-мм гаубица M2 обеспечивала мощную огневую поддержку пехоты и танков на расстоянии до 11 км. Открытая рубка позволяла быстро менять углы возвышения и вести круговую оборону.</p>
+                <h4>Боевое применение</h4><p>Впервые массово применена в Северной Африке (1942), затем в Италии и Нормандии. Стала основой артиллерийских дивизионов танковых и пехотных дивизий США. Британцы использовали M7 до конца войны, после чего заменили их на Sexton. Всего выпущено ~4,300 шт.</p>`,
+                battles: ['Северная Африка (1942-1943)', 'Сицилия и Италия (1943-1945)', 'Нормандия (июнь-август 1944)', 'Арденны (декабрь 1944)', 'Форсирование Рейна (март 1945)'],
+                xray: {
+                    engine: 'Бензиновый радиальный двигатель Continental R975 C1 мощностью 340 л.с. Авиационный тип',
+                    transmission: 'Механическая 5-ступенчатая КПП. Усиленная для компенсации веса рубки',
+                    crew: 'Экипаж из 7 человек: командир, 2 наводчика, 3 заряжающих, механик-водитель. Открытая рубка',
+                    ammunition: '69 снарядов для 105-мм гаубицы. Топливные баки ёмкостью 416 л',
+                    armament: '105-мм гаубица M2A1 L/22. Угол ВН от -5° до +65°. Зенитный M2HB'
+                }
+            }
+
+        };
+
+        const countries = {
+            ussr: ['t34-85', 'kv2', 'is2', 't54', 'bt7', 'su100'],
+            germany: ['tiger1', 'panther', 'tiger2', 'maus', 'panzer4', 'panzer2', 'stug3'],
+            france: ['b1bis', 'ar44', 'r35', 's35'],
+            usa: ['m4sherman', 'm26', 'm10', 'm46', 'm3stuart', 'm7priest']
+        };
+
+        const countryNames = {
+            ussr: 'СССР',
+            germany: 'Германия',
+            france: 'Франция',
+            usa: 'США'
+        };
+
+        let currentPage = 'home';
+        let previousPage = 'home';
+        let currentTankId = null;
+        let scene, camera, renderer, tankGroup, controls;
+        let isXRay = false;
+        let isAutoRotating = true;
+        let xrayComponents = [];
+
+        // Навигация
+        function showPage(page) {
+            previousPage = currentPage;
+            currentPage = page;
+
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + page).classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.nav-btn[data-page="${page}"]`)?.classList.add('active');
+
+            window.scrollTo(0, 0);
+
+            if (page === 'tank' && currentTankId) {
+                setTimeout(() => initTankViewer(currentTankId), 100);
+            } else if (page !== 'tank') {
+                cleanupViewer();
+            }
+        }
+
+        function goBack() {
+            showPage(previousPage);
+        }
+
+        // Фильтры
+        function filterTanks(country, filterType, value) {
+            const tankIds = countries[country];
+            tankIds.forEach(id => {
+                const tank = tankData[id];
+                const card = document.querySelector(`[data-tank="${id}"]`);
+                if (!card) return;
+
+                let show = true;
+
+                if (filterType === 'type' && value !== 'all') {
+                    show = tank.type === value;
+                } else if (filterType === 'year' && value !== 'all') {
+                    show = tank.year === parseInt(value);
+                }
+
+                if (show) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // Генерация карточек
+        function generateTankCards() {
+            let totalCount = 0;
+
+            Object.entries(countries).forEach(([country, tankIds]) => {
+                const container = document.getElementById(country + '-tanks');
+                container.innerHTML = '';
+
+                tankIds.forEach(id => {
+                    const tank = tankData[id];
+                    const card = document.createElement('div');
+                    card.className = 'tank-card';
+                    card.setAttribute('data-tank', id);
+                    card.setAttribute('data-type', tank.type);
+                    card.setAttribute('data-year', Math.floor(tank.year / 10) * 10);
+                    card.onclick = () => openTank(id);
+                    card.innerHTML = `
+                        <div class="tank-card-preview">
+                            <span class="tank-year-badge">${tank.year}</span>
+                            <span class="tank-type-badge">${tank.typeName}</span>
+                            ${tank.icon}
+                        </div>
+                        <div class="tank-card-info">
+                            <h3>${tank.name}</h3>
+                            <p>${tank.typeName} • ${tank.year} г.</p>
+                            <span class="tank-tag">${tank.typeName}</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+                document.getElementById(`count-${country}`).textContent = `${tankIds.length} танков`;
+                totalCount += tankIds.length;
+            });
+
+            document.getElementById('total-tanks').textContent = totalCount;
+        }
+
+        // Открытие танка
+        function openTank(id) {
+            currentTankId = id;
+            const tank = tankData[id];
+
+            document.getElementById('tank-page-title').textContent = tank.name;
+            previousPage = tank.country;
+
+            // Спецификации
+            let specsHTML = '';
+            Object.entries(tank.specs).forEach(([key, val]) => {
+                specsHTML += `
+                    <div class="spec-row">
+                        <span class="spec-label">${key}</span>
+                        <span class="spec-value">${val}</span>
+                    </div>
+                `;
+            });
+
+            // Сражения
+            let battlesHTML = '';
+            tank.battles.forEach(b => {
+                battlesHTML += `<li>${b}</li>`;
+            });
+
+            // X-Ray информация
+            let xrayHTML = '';
+            if (tank.xray) {
+                xrayHTML = `
+                    <div class="xray-info">
+                        <h4>🔍 Внутреннее устройство (режим X-Ray)</h4>
+                        <ul>
+                            <li><strong>Двигатель:</strong> ${tank.xray.engine}</li>
+                            <li><strong>Трансмиссия:</strong> ${tank.xray.transmission}</li>
+                            <li><strong>Экипаж:</strong> ${tank.xray.crew}</li>
+                            <li><strong>Боекомплект:</strong> ${tank.xray.ammunition}</li>
+                            <li><strong>Вооружение:</strong> ${tank.xray.armament}</li>
+                        </ul>
+                    </div>
+                `;
+            }
+
+            document.getElementById('tank-details').innerHTML = `
+                <div class="detail-panel">
+                    <div class="detail-panel-header">📋 Характеристики</div>
+                    <div class="detail-panel-content">${specsHTML}</div>
+                </div>
+                <div class="detail-panel">
+                    <div class="detail-panel-header">📖 История</div>
+                    <div class="detail-panel-content">
+                        <div class="history-text">${tank.history}</div>
+                    </div>
+                </div>
+                <div class="detail-panel">
+                    <div class="detail-panel-header">⚔️ Боевые действия</div>
+                    <div class="detail-panel-content">
+                        <ul class="battles-list">${battlesHTML}</ul>
+                        ${xrayHTML}
+                    </div>
+                </div>
+            `;
+
+            showPage('tank');
+        }
+
+        // Очистка вьювера
+        function cleanupViewer() {
+            if (renderer) {
+                renderer.dispose();
+                renderer = null;
+            }
+            if (scene) {
+                scene.clear();
+                scene = null;
+            }
+            tankGroup = null;
+            xrayComponents = [];
+        }
+
+        // Инициализация 3D
+        function initTankViewer(id) {
+            const canvas = document.getElementById('tank-viewer');
+            if (!canvas) return;
+
+            const tank = tankData[id];
+            document.getElementById('tank-model-info').textContent = `${tank.name} • ${tank.typeName} • ${tank.year}`;
+
+            cleanupViewer();
+
+            // Сцена
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a2018);
+            scene.fog = new THREE.Fog(0x1a2018, 10, 50);
+
+            // Камера
+            camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+            camera.position.set(5, 3, 8);
+
+            // Рендерер
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Контролы
+            controls = new THREE.OrbitControls(camera, canvas);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.target.set(0, 1, 0);
+
+            // Освещение
+            const ambientLight = new THREE.AmbientLight(0x607060, 0.5);
+            scene.add(ambientLight);
+
+            const mainLight = new THREE.DirectionalLight(0xffeedd, 0.8);
+            mainLight.position.set(5, 8, 5);
+            mainLight.castShadow = true;
+            mainLight.shadow.mapSize.width = 2048;
+            mainLight.shadow.mapSize.height = 2048;
+            scene.add(mainLight);
+
+            const fillLight = new THREE.DirectionalLight(0x8899aa, 0.3);
+            fillLight.position.set(-5, 3, -5);
+            scene.add(fillLight);
+
+            const rimLight = new THREE.DirectionalLight(0x99bb88, 0.4);
+            rimLight.position.set(0, 2, -8);
+            scene.add(rimLight);
+
+            // Пол
+            const groundGeo = new THREE.PlaneGeometry(30, 30);
+            const groundMat = new THREE.MeshStandardMaterial({
+                color: 0x2a3528,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -1.5;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Сетка
+            const gridHelper = new THREE.GridHelper(30, 30, 0x3a4235, 0x2a3528);
+            gridHelper.position.y = -1.49;
+            scene.add(gridHelper);
+
+            // Танк
+            tankGroup = new THREE.Group();
+            buildDetailedTankModel(id);
+            scene.add(tankGroup);
+
+            // Ресайз
+            const resizeObserver = new ResizeObserver(() => {
+                if (!canvas || !camera || !renderer) return;
+                const w = canvas.clientWidth;
+                const h = canvas.clientHeight;
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h);
+            });
+            resizeObserver.observe(canvas);
+
+            animate();
+        }
+
+        function buildDetailedTankModel(id) {
+            while (tankGroup.children.length > 0) {
+                tankGroup.remove(tankGroup.children[0]);
+            }
+            xrayComponents = [];
+
+            const tank = tankData[id];
+            const params = getTankParams(id);
+
+            // Материалы
+            const armorMat = new THREE.MeshStandardMaterial({
+                color: 0x5a6a4a,
+                roughness: 0.7,
+                metalness: 0.4
+            });
+
+            const darkArmorMat = new THREE.MeshStandardMaterial({
+                color: 0x4a5a3a,
+                roughness: 0.75,
+                metalness: 0.35
+            });
+
+            const trackMat = new THREE.MeshStandardMaterial({
+                color: 0x2a2a25,
+                roughness: 0.9,
+                metalness: 0.5
+            });
+
+            const barrelMat = new THREE.MeshStandardMaterial({
+                color: 0x4a4a45,
+                roughness: 0.5,
+                metalness: 0.6
+            });
+
+            const glassMat = new THREE.MeshStandardMaterial({
+                color: 0x889988,
+                roughness: 0.1,
+                metalness: 0.1,
+                transparent: true,
+                opacity: 0.6
+            });
+
+            const engineMat = new THREE.MeshStandardMaterial({
+                color: 0x8b4513,
+                roughness: 0.8,
+                metalness: 0.3,
+                wireframe: false
+            });
+
+            const ammoMat = new THREE.MeshStandardMaterial({
+                color: 0x4a5530,
+                roughness: 0.6,
+                metalness: 0.2
+            });
+
+            // Корпус
+            const bodyGeo = new THREE.BoxGeometry(params.bodyW, params.bodyH, params.bodyD);
+            const body = new THREE.Mesh(bodyGeo, armorMat);
+            body.position.y = -0.2;
+            body.castShadow = true;
+            body.receiveShadow = true;
+            body.userData = { isXrayPart: true, category: 'armor' };
+            tankGroup.add(body);
+
+            // Детализация корпуса
+            addHullDetails(params, armorMat, darkArmorMat);
+
+            // Гусеницы
+            addDetailedTracks(params, trackMat);
+
+            // Башня
+            addDetailedTurret(id, params, armorMat, darkArmorMat, barrelMat);
+
+            // Внутренние компоненты (для X-Ray)
+            addInternalComponents(id, params, engineMat, ammoMat, glassMat);
+
+            tankGroup.position.y = 0.5;
+        }
+
+        function addHullDetails(params, armorMat, darkArmorMat) {
+            // Носовой лист с наклоном
+            const frontSlopeGeo = new THREE.BoxGeometry(params.bodyW * 0.95, params.bodyH * 0.5, 0.2);
+            const frontSlope = new THREE.Mesh(frontSlopeGeo, darkArmorMat);
+            frontSlope.position.set(0, params.bodyH * 0.05, params.bodyD / 2 + 0.08);
+            frontSlope.rotation.x = -0.2;
+            frontSlope.castShadow = true;
+            frontSlope.userData = { isXrayPart: true, category: 'armor' };
+            tankGroup.add(frontSlope);
+
+            // Люки на корпусе
+            const hatchGeo = new THREE.BoxGeometry(0.4, 0.05, 0.6);
+            const hatch1 = new THREE.Mesh(hatchGeo, darkArmorMat);
+            hatch1.position.set(-params.bodyW / 3, params.bodyH / 2 - 0.02, -params.bodyD / 4);
+            hatch1.userData = { isXrayPart: true, category: 'details' };
+            tankGroup.add(hatch1);
+
+            const hatch2 = hatch1.clone();
+            hatch2.position.set(params.bodyW / 3, params.bodyH / 2 - 0.02, -params.bodyD / 4);
+            tankGroup.add(hatch2);
+
+            // Инструменты на бортах
+            const toolGeo = new THREE.BoxGeometry(0.05, 0.15, 0.8);
+            for (let i = -1; i <= 1; i += 2) {
+                const tool = new THREE.Mesh(toolGeo, darkArmorMat);
+                tool.position.set(i * (params.bodyW / 2 + 0.03), 0, 0);
+                tool.userData = { isXrayPart: true, category: 'details' };
+                tankGroup.add(tool);
+            }
+        }
+
+        function addDetailedTracks(params, trackMat) {
+            // Гусеницы
+            const trackWidth = params.trackW;
+            const trackHeight = params.bodyH * 0.65;
+            const trackLength = params.bodyD + 0.4;
+
+            const trackGeo = new THREE.BoxGeometry(trackWidth, trackHeight, trackLength);
+            const leftTrack = new THREE.Mesh(trackGeo, trackMat);
+            leftTrack.position.set(-params.bodyW / 2 - trackWidth / 2 + 0.1, -0.35, 0);
+            leftTrack.castShadow = true;
+            leftTrack.userData = { isXrayPart: true, category: 'tracks' };
+            tankGroup.add(leftTrack);
+
+            const rightTrack = leftTrack.clone();
+            rightTrack.position.set(params.bodyW / 2 + trackWidth / 2 - 0.1, -0.35, 0);
+            tankGroup.add(rightTrack);
+
+            // Катки
+            const wheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.18, 16);
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x3a3a35, roughness: 0.8, metalness: 0.5 });
+
+            const wheelPositions = [
+                [-params.bodyW/2 - trackWidth/2 + 0.2, -0.6, params.bodyD/2 - 0.6],
+                [-params.bodyW/2 - trackWidth/2 + 0.2, -0.6, params.bodyD/2 - 1.2],
+                [-params.bodyW/2 - trackWidth/2 + 0.2, -0.6, params.bodyD/2 - 1.8],
+                [-params.bodyW/2 - trackWidth/2 + 0.2, -0.6, -params.bodyD/2 + 0.6],
+                [-params.bodyW/2 - trackWidth/2 + 0.2, -0.6, -params.bodyD/2 + 1.2],
+                [params.bodyW/2 + trackWidth/2 - 0.2, -0.6, params.bodyD/2 - 0.6],
+                [params.bodyW/2 + trackWidth/2 - 0.2, -0.6, params.bodyD/2 - 1.2],
+                [params.bodyW/2 + trackWidth/2 - 0.2, -0.6, params.bodyD/2 - 1.8],
+                [params.bodyW/2 + trackWidth/2 - 0.2, -0.6, -params.bodyD/2 + 0.6],
+                [params.bodyW/2 + trackWidth/2 - 0.2, -0.6, -params.bodyD/2 + 1.2]
+            ];
+
+            wheelPositions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(...pos);
+                wheel.castShadow = true;
+                wheel.userData = { isXrayPart: true, category: 'tracks' };
+                tankGroup.add(wheel);
+            });
+
+            // Ведущие колёса
+            const driveSprocketGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.2, 12);
+            const driveSprocketMat = new THREE.MeshStandardMaterial({ color: 0x2a2a25, roughness: 0.7, metalness: 0.6 });
+
+            for (let side of [-1, 1]) {
+                const sprocket = new THREE.Mesh(driveSprocketGeo, driveSprocketMat);
+                sprocket.rotation.z = Math.PI / 2;
+                sprocket.position.set(side * (params.bodyW / 2 + trackWidth / 2), -0.4, -params.bodyD / 2 + 0.5);
+                sprocket.userData = { isXrayPart: true, category: 'tracks' };
+                tankGroup.add(sprocket);
+            }
+        }
+
+        function addDetailedTurret(id, params, armorMat, darkArmorMat, barrelMat) {
+            // Башня
+            let turret;
+            if (id === 'kv2' || id === 'maus') {
+                // Цилиндрическая башня
+                const turretGeo = new THREE.CylinderGeometry(params.turretW / 2, params.turretW / 2, params.turretH, 12);
+                turret = new THREE.Mesh(turretGeo, darkArmorMat);
+            } else if (id === 'tiger1' || id === 'tiger2') {
+                // Цилиндрическая с небольшим конусом
+                const turretGeo = new THREE.CylinderGeometry(params.turretW / 2, params.turretW / 2 * 0.9, params.turretH, 12);
+                turret = new THREE.Mesh(turretGeo, darkArmorMat);
+            } else {
+                // Призматическая башня
+                const turretGeo = new THREE.BoxGeometry(params.turretW, params.turretH, params.turretD);
+                turret = new THREE.Mesh(turretGeo, darkArmorMat);
+            }
+
+            turret.position.set(0, params.bodyH / 2 + params.turretH / 2 - 0.2, params.turretOffset || -0.1);
+            turret.castShadow = true;
+            turret.receiveShadow = true;
+            turret.userData = { isXrayPart: true, category: 'armor' };
+            tankGroup.add(turret);
+
+            // Командирская башенка
+            const cupolaGeo = new THREE.CylinderGeometry(0.3, 0.35, 0.4, 8);
+            const cupola = new THREE.Mesh(cupolaGeo, darkArmorMat);
+            cupola.position.set(0.4, params.bodyH / 2 + params.turretH - 0.2, params.turretOffset || -0.1);
+            cupola.userData = { isXrayPart: true, category: 'details' };
+            tankGroup.add(cupola);
+
+            // Люк командира
+            const hatchGeo = new THREE.BoxGeometry(0.3, 0.05, 0.4);
+            const hatch = new THREE.Mesh(hatchGeo, darkArmorMat);
+            hatch.position.set(0.4, params.bodyH / 2 + params.turretH, params.turretOffset || -0.1);
+            tankGroup.add(hatch);
+
+            // Дуло
+            const barrelGeo = new THREE.CylinderGeometry(params.barrelR, params.barrelR * 0.7, params.barrelLen, 12);
+            const barrel = new THREE.Mesh(barrelGeo, barrelMat);
+            barrel.rotation.x = Math.PI / 2;
+            barrel.position.set(0, params.bodyH / 2 + params.turretH / 2 - 0.2, (params.turretOffset || -0.1) + params.turretD / 2 + params.barrelLen / 2 - 0.1);
+            barrel.castShadow = true;
+            barrel.userData = { isXrayPart: true, category: 'weapon' };
+            tankGroup.add(barrel);
+
+            // Дульный тормоз
+            const muzzleGeo = new THREE.CylinderGeometry(params.barrelR * 1.4, params.barrelR * 0.7, 0.35, 12);
+            const muzzle = new THREE.Mesh(muzzleGeo, barrelMat);
+            muzzle.rotation.x = Math.PI / 2;
+            muzzle.position.set(0, params.bodyH / 2 + params.turretH / 2 - 0.2, (params.turretOffset || -0.1) + params.turretD / 2 + params.barrelLen - 0.1);
+            muzzle.userData = { isXrayPart: true, category: 'weapon' };
+            tankGroup.add(muzzle);
+
+            // Прицел
+            const sightGeo = new THREE.BoxGeometry(0.15, 0.2, 0.25);
+            const sight = new THREE.Mesh(sightGeo, darkArmorMat);
+            sight.position.set(-0.3, params.bodyH / 2 + params.turretH / 2 + 0.1, (params.turretOffset || -0.1) + params.turretD / 2 + 0.1);
+            sight.userData = { isXrayPart: true, category: 'details' };
+            tankGroup.add(sight);
+
+            // Антенна (если есть)
+            if (id === 'm4sherman' || id === 'tiger1' || id === 'panther') {
+                const antennaGeo = new THREE.CylinderGeometry(0.02, 0.02, 2.2, 6);
+                const antennaMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.6, metalness: 0.7 });
+                const antenna = new THREE.Mesh(antennaGeo, antennaMat);
+                antenna.position.set(params.bodyW / 2 - 0.35, 1.8, -params.bodyD / 2 + 0.6);
+                antenna.userData = { isXrayPart: true, category: 'details' };
+                tankGroup.add(antenna);
+            }
+
+            // Дополнительные детали для конкретных танков
+            if (id === 'tiger1') {
+                // Zimmerit (противокумулятивное покрытие) - имитация текстурой
+                turret.material = new THREE.MeshStandardMaterial({
+                    color: 0x6a7a5a,
+                    roughness: 0.9,
+                    metalness: 0.3
+                });
+            }
+
+            if (id === 'panther') {
+                // Наклонная башня
+                turret.rotation.x = -0.1;
+            }
+
+            if (id === 'maus') {
+                // Вторая пушка (75-мм)
+                const barrel2Geo = new THREE.CylinderGeometry(0.05, 0.04, 1.2, 8);
+                const barrel2 = new THREE.Mesh(barrel2Geo, barrelMat);
+                barrel2.rotation.x = Math.PI / 2;
+                barrel2.position.set(0.5, params.bodyH / 2 + params.turretH / 2 - 0.2, (params.turretOffset || -0.1) + params.turretD / 2 + 0.8);
+                tankGroup.add(barrel2);
+            }
+        }
+
+        function addInternalComponents(id, params, engineMat, ammoMat, glassMat) {
+            // Двигатель (в корме)
+            const engineGeo = new THREE.BoxGeometry(params.bodyW * 0.6, params.bodyH * 0.5, params.bodyD * 0.35);
+            const engine = new THREE.Mesh(engineGeo, engineMat);
+            engine.position.set(0, -0.1, -params.bodyD / 2 + params.bodyD * 0.25);
+            engine.visible = false;
+            engine.userData = { isXrayPart: true, category: 'engine', name: 'Двигатель' };
+            tankGroup.add(engine);
+            xrayComponents.push(engine);
+
+            // Радиаторы
+            const radiatorGeo = new THREE.BoxGeometry(params.bodyW * 0.5, 0.2, 0.15);
+            const radiatorMat = new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.7, metalness: 0.5 });
+            const radiator = new THREE.Mesh(radiatorGeo, radiatorMat);
+            radiator.position.set(0, params.bodyH / 2 - 0.1, -params.bodyD / 2 + 0.1);
+            radiator.visible = false;
+            radiator.userData = { isXrayPart: true, category: 'engine', name: 'Радиатор' };
+            tankGroup.add(radiator);
+            xrayComponents.push(radiator);
+
+            // Боеукладка
+            const ammoRackGeo = new THREE.BoxGeometry(params.bodyW * 0.5, 0.4, params.bodyD * 0.3);
+            const ammoRack = new THREE.Mesh(ammoRackGeo, ammoMat);
+            ammoRack.position.set(0, -0.15, params.bodyD / 2 - params.bodyD * 0.25);
+            ammoRack.visible = false;
+            ammoRack.userData = { isXrayPart: true, category: 'ammunition', name: 'Боеукладка' };
+            tankGroup.add(ammoRack);
+            xrayComponents.push(ammoRack);
+
+            // Снаряды (визуализация)
+            const shellGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.3, 8);
+            const shellMat = new THREE.MeshStandardMaterial({ color: 0x5a4a3a, roughness: 0.6, metalness: 0.4 });
+            for (let i = 0; i < 8; i++) {
+                const shell = new THREE.Mesh(shellGeo, shellMat);
+                shell.rotation.x = Math.PI / 2;
+                shell.position.set(
+                    (i % 4 - 1.5) * 0.2,
+                    -0.15,
+                    params.bodyD / 2 - params.bodyD * 0.25 + (Math.floor(i / 4) - 0.5) * 0.15
+                );
+                shell.visible = false;
+                shell.userData = { isXrayPart: true, category: 'ammunition', name: 'Снаряд' };
+                tankGroup.add(shell);
+                xrayComponents.push(shell);
+            }
+
+            // Топливные баки
+            const fuelTankGeo = new THREE.BoxGeometry(0.3, 0.4, params.bodyD * 0.4);
+            const fuelTankMat = new THREE.MeshStandardMaterial({ color: 0x3a4a3a, roughness: 0.7, metalness: 0.3, transparent: true, opacity: 0.7 });
+
+            for (let side of [-1, 1]) {
+                const fuelTank = new THREE.Mesh(fuelTankGeo, fuelTankMat);
+                fuelTank.position.set(side * (params.bodyW / 3), -0.2, 0);
+                fuelTank.visible = false;
+                fuelTank.userData = { isXrayPart: true, category: 'fuel', name: 'Топливный бак' };
+                tankGroup.add(fuelTank);
+                xrayComponents.push(fuelTank);
+            }
+
+            // Сиденья экипажа
+            const seatGeo = new THREE.BoxGeometry(0.4, 0.45, 0.35);
+            const seatMat = new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 0.8, metalness: 0.2 });
+
+            const seats = [
+                { pos: [-params.bodyW / 3, 0, params.bodyD / 3], role: 'Механик-водитель' },
+                { pos: [params.bodyW / 3, 0, params.bodyD / 3], role: 'Радист' },
+                { pos: [-0.4, params.bodyH / 2, 0], role: 'Наводчик' },
+                { pos: [0.4, params.bodyH / 2, 0], role: 'Заряжающий' },
+                { pos: [0.5, params.bodyH / 2, -0.2], role: 'Командир' }
+            ];
+
+            seats.forEach(seat => {
+                const seatMesh = new THREE.Mesh(seatGeo, seatMat);
+                seatMesh.position.set(...seat.pos);
+                seatMesh.visible = false;
+                seatMesh.userData = { isXrayPart: true, category: 'crew', name: seat.role };
+                tankGroup.add(seatMesh);
+                xrayComponents.push(seatMesh);
+            });
+
+            // Приборы наблюдения (перископы)
+            const periscopeGeo = new THREE.BoxGeometry(0.08, 0.15, 0.12);
+            const periscopeMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.5, metalness: 0.7, transparent: true, opacity: 0.8 });
+
+            const periscopes = [
+                [-params.bodyW / 3, params.bodyH / 2 - 0.02, params.bodyD / 2 - 0.1],
+                [params.bodyW / 3, params.bodyH / 2 - 0.02, params.bodyD / 2 - 0.1],
+                [-0.3, params.bodyH / 2 + params.turretH / 2, (params.turretOffset || -0.1) + params.turretD / 2 + 0.15]
+            ];
+
+            periscopes.forEach(pos => {
+                const periscope = new THREE.Mesh(periscopeGeo, periscopeMat);
+                periscope.position.set(...pos);
+                periscope.visible = false;
+                periscope.userData = { isXrayPart: true, category: 'optics', name: 'Прибор наблюдения' };
+                tankGroup.add(periscope);
+                xrayComponents.push(periscope);
+            });
+
+            // Трансмиссия
+            const transGeo = new THREE.BoxGeometry(params.bodyW * 0.4, 0.3, params.bodyD * 0.2);
+            const transMat = new THREE.MeshStandardMaterial({ color: 0x5a4a3a, roughness: 0.7, metalness: 0.5 });
+            const transmission = new THREE.Mesh(transGeo, transMat);
+            transmission.position.set(0, -0.3, params.bodyD / 2 - 0.3);
+            transmission.visible = false;
+            transmission.userData = { isXrayPart: true, category: 'transmission', name: 'Трансмиссия' };
+            tankGroup.add(transmission);
+            xrayComponents.push(transmission);
+        }
+
+        function getTankParams(id) {
+            const params = {
+                't34-85':    { bodyW: 2.2, bodyH: 1.0, bodyD: 4.5, turretW: 1.6, turretH: 0.9, turretD: 1.6, barrelLen: 2.8, barrelR: 0.06, trackW: 0.55, turretOffset: -0.1 },
+                'kv2':       { bodyW: 2.4, bodyH: 1.1, bodyD: 4.8, turretW: 2.2, turretH: 1.8, turretD: 2.2, barrelLen: 1.8, barrelR: 0.12, trackW: 0.65, turretOffset: 0 },
+                'is2':       { bodyW: 2.3, bodyH: 1.0, bodyD: 5.0, turretW: 1.6, turretH: 1.0, turretD: 1.6, barrelLen: 3.2, barrelR: 0.07, trackW: 0.6, turretOffset: -0.1 },
+                't54':       { bodyW: 2.3, bodyH: 0.95, bodyD: 4.8, turretW: 1.7, turretH: 0.85, turretD: 1.7, barrelLen: 3.0, barrelR: 0.06, trackW: 0.58, turretOffset: -0.1 },
+                'tiger1':    { bodyW: 2.4, bodyH: 1.0, bodyD: 5.2, turretW: 1.6, turretH: 0.95, turretD: 1.7, barrelLen: 3.2, barrelR: 0.06, trackW: 0.65, turretOffset: 0 },
+                'panther':   { bodyW: 2.3, bodyH: 1.0, bodyD: 5.0, turretW: 1.5, turretH: 0.85, turretD: 1.6, barrelLen: 3.5, barrelR: 0.05, trackW: 0.6, turretOffset: -0.1 },
+                'tiger2':    { bodyW: 2.5, bodyH: 1.1, bodyD: 5.5, turretW: 1.7, turretH: 0.95, turretD: 1.8, barrelLen: 3.8, barrelR: 0.06, trackW: 0.65, turretOffset: 0 },
+                'maus':      { bodyW: 3.0, bodyH: 1.3, bodyD: 6.0, turretW: 2.4, turretH: 1.4, turretD: 2.4, barrelLen: 4.0, barrelR: 0.08, trackW: 0.85, turretOffset: 0 },
+                'panzer4':   { bodyW: 2.1, bodyH: 0.95, bodyD: 4.5, turretW: 1.4, turretH: 0.85, turretD: 1.5, barrelLen: 2.6, barrelR: 0.05, trackW: 0.52, turretOffset: -0.1 },
+                'b1bis':     { bodyW: 2.0, bodyH: 1.0, bodyD: 4.5, turretW: 1.1, turretH: 0.75, turretD: 1.1, barrelLen: 2.0, barrelR: 0.06, trackW: 0.45, turretOffset: 0.5 },
+                'ar44':      { bodyW: 2.3, bodyH: 1.0, bodyD: 5.0, turretW: 1.6, turretH: 1.0, turretD: 1.6, barrelLen: 3.0, barrelR: 0.06, trackW: 0.6, turretOffset: -0.1 },
+                'm4sherman': { bodyW: 2.2, bodyH: 1.0, bodyD: 4.5, turretW: 1.5, turretH: 0.85, turretD: 1.5, barrelLen: 2.5, barrelR: 0.05, trackW: 0.5, turretOffset: -0.1 },
+                'm26':       { bodyW: 2.3, bodyH: 1.0, bodyD: 4.8, turretW: 1.6, turretH: 0.9, turretD: 1.6, barrelLen: 3.0, barrelR: 0.06, trackW: 0.55, turretOffset: -0.1 },
+                'm10':       { bodyW: 2.2, bodyH: 1.0, bodyD: 4.5, turretW: 1.6, turretH: 0.65, turretD: 1.9, barrelLen: 2.8, barrelR: 0.05, trackW: 0.5, turretOffset: -0.2 },
+                'm46':       { bodyW: 2.3, bodyH: 1.0, bodyD: 4.8, turretW: 1.6, turretH: 0.9, turretD: 1.6, barrelLen: 3.0, barrelR: 0.06, trackW: 0.55, turretOffset: -0.1 },
+                'bt7':       { bodyW: 1.9, bodyH: 0.9, bodyD: 4.0, turretW: 1.3, turretH: 0.7, turretD: 1.3, barrelLen: 2.2, barrelR: 0.04, trackW: 0.42, turretOffset: -0.1 },
+                'su100':     { bodyW: 2.2, bodyH: 0.95, bodyD: 4.5, turretW: 1.5, turretH: 0.75, turretD: 1.6, barrelLen: 3.2, barrelR: 0.06, trackW: 0.5, turretOffset: -0.3 },
+                'panzer2':   { bodyW: 1.8, bodyH: 0.85, bodyD: 4.2, turretW: 1.1, turretH: 0.7, turretD: 1.1, barrelLen: 1.8, barrelR: 0.03, trackW: 0.38, turretOffset: -0.1 },
+                'stug3':     { bodyW: 2.1, bodyH: 0.95, bodyD: 4.6, turretW: 1.4, turretH: 0.65, turretD: 1.5, barrelLen: 2.8, barrelR: 0.05, trackW: 0.52, turretOffset: -0.3 },
+                'r35':       { bodyW: 1.7, bodyH: 0.85, bodyD: 3.8, turretW: 1.0, turretH: 0.65, turretD: 1.0, barrelLen: 1.6, barrelR: 0.04, trackW: 0.35, turretOffset: 0.2 },
+                's35':       { bodyW: 1.9, bodyH: 0.9, bodyD: 4.3, turretW: 1.2, turretH: 0.75, turretD: 1.2, barrelLen: 2.0, barrelR: 0.04, trackW: 0.4, turretOffset: 0.1 },
+                'm3stuart':  { bodyW: 1.9, bodyH: 0.85, bodyD: 4.0, turretW: 1.3, turretH: 0.7, turretD: 1.3, barrelLen: 2.0, barrelR: 0.04, trackW: 0.45, turretOffset: -0.1 },
+                'm7priest':  { bodyW: 2.2, bodyH: 0.95, bodyD: 4.5, turretW: 1.6, turretH: 0.85, turretD: 1.8, barrelLen: 2.5, barrelR: 0.08, trackW: 0.5, turretOffset: -0.3 }
+            };
+            return params[id] || params['t34-85'];
+        }
+
+        function animate() {
+            if (!renderer || !scene || !camera) return;
+            requestAnimationFrame(animate);
+
+            if (isAutoRotating && controls) {
+                controls.autoRotate = true;
+                controls.autoRotateSpeed = 0.5;
+            } else if (controls) {
+                controls.autoRotate = false;
+            }
+
+            if (controls) controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function resetCamera() {
+            if (!controls) return;
+            controls.reset();
+            camera.position.set(5, 3, 8);
+            controls.target.set(0, 1, 0);
+        }
+
+        function toggleXRay() {
+            isXRay = !isXRay;
+            const btn = document.getElementById('xray-btn');
+
+            if (isXRay) {
+                btn.classList.add('active');
+                // Показываем внутренние компоненты, делаем броню прозрачной
+                tankGroup.children.forEach(child => {
+                    if (child.userData.isXrayPart) {
+                        if (child.userData.category === 'armor' || child.userData.category === 'tracks' || child.userData.category === 'weapon') {
+                            child.material = child.material.clone();
+                            child.material.transparent = true;
+                            child.material.opacity = 0.3;
+                        }
+                        if (['engine', 'ammunition', 'fuel', 'crew', 'optics', 'transmission'].includes(child.userData.category)) {
+                            child.visible = true;
+                        }
+                    }
+                });
+            } else {
+                btn.classList.remove('active');
+                // Возвращаем как было
+                tankGroup.children.forEach(child => {
+                    if (child.userData.isXrayPart) {
+                        if (child.userData.category === 'armor' || child.userData.category === 'tracks' || child.userData.category === 'weapon') {
+                            child.material.transparent = false;
+                            child.material.opacity = 1;
+                        }
+                        if (['engine', 'ammunition', 'fuel', 'crew', 'optics', 'transmission'].includes(child.userData.category)) {
+                            child.visible = false;
+                        }
+                    }
+                });
+            }
+        }
+
+        function toggleAutoRotate() {
+            isAutoRotating = !isAutoRotating;
+        }
+
+        // Инициализация
+        generateTankCards();
+    </script>
+</body>
+</html>
